@@ -17,8 +17,15 @@
   body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--sans); font-size: 15px; line-height: 1.5; }
   h1, h2, h3 { font-family: var(--serif); font-weight: 600; margin: 0; letter-spacing: -.01em; }
   a { color: var(--blue); }
-  button, input, select, textarea { font: inherit; color: inherit; }
+  button, input, select, textarea { font: inherit; color: var(--ink); }
   button { cursor: pointer; }
+  input, select, textarea {
+    background: var(--card); border: 1.5px solid var(--line-strong);
+    border-radius: var(--radius); padding: 7px 10px;
+  }
+  input[type=checkbox] { padding: 0; accent-color: var(--accent); width: auto; }
+  input:focus, select:focus, textarea:focus { outline: 2px solid var(--blue); outline-offset: -1px; }
+  ::placeholder { color: var(--ink-soft); opacity: 1; }
 
   .bar {
     position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 12px;
@@ -85,7 +92,7 @@
   .ingrow { display: grid; grid-template-columns: 1.4fr auto 1fr auto; gap: 8px; align-items: start; padding: 9px 0; border-top: 1px solid var(--line); }
   .ingrow:first-of-type { border-top: 0; }
   .ingrow .amt { display: flex; gap: 6px; align-items: center; }
-  .ingrow .amt input[type=number] { width: 68px; }
+  .ingrow .amt input[type=number] { width: 78px; }
   .ingrow .amt select { width: auto; }
   .ingrow .sec { display: flex; gap: 6px; flex-wrap: wrap; }
   .ingrow .sec input { width: 100%; }
