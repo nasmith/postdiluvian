@@ -44,14 +44,16 @@
   --shadow: 0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.4);
 }
 
-/* Clearable text/search inputs — see ui.js (window.PDClearable). */
-.clearable { position: relative; display: block; flex: 1 1 auto; min-width: 0; }
-.clearable > input { width: 100%; padding-right: 26px !important; }
+/* Clearable text/search inputs — see ui.js (window.PDClearable).
+   The wrapper stands in for the input it replaces: a flex box (block-level, so
+   it fills a normal field; flex:1 so it fills a flex row) that the input fills. */
+.clearable { position: relative; display: flex; flex: 1 1 0%; min-width: 0; }
+.clearable > input { flex: 1 1 auto; min-width: 0; width: 100%; padding-right: 28px !important; }
 .clearable > .clearx {
-  position: absolute; top: 50%; right: 7px; transform: translateY(-50%);
-  width: 17px; height: 17px; padding: 0; border: 0; border-radius: 50%;
+  position: absolute; top: 50%; right: 6px; transform: translateY(-50%);
+  width: 18px; height: 18px; padding: 0; margin: 0; border: 0; border-radius: 50%;
   display: none; align-items: center; justify-content: center;
-  font-size: 12px; line-height: 1; cursor: pointer;
+  font-size: 12px; line-height: 1; cursor: pointer; flex: none;
   background: var(--line-strong); color: var(--paper);
 }
 .clearable.has-value > .clearx { display: flex; }
