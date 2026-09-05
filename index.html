@@ -26,7 +26,6 @@
     --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     --radius: 6px;
     --maxw: 1180px;
-    --list-w: 800px;
   }
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme="light"]) {
@@ -81,13 +80,11 @@
     border-bottom: 1px solid var(--line);
     background: var(--paper);
     position: sticky; top: 0; z-index: 30;
-    backdrop-filter: blur(6px);
   }
   .top .wrap { padding-top: 16px; padding-bottom: 14px; }
   .brand { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
   .brand h1 { font-size: clamp(1.7rem, 1.15rem + 2.1vw, 2.5rem); }
   .brand .sub { font-family: var(--serif); font-style: italic; font-weight: 400; color: var(--accent-soft); font-size: 1rem; }
-  .brand .count { margin-left: auto; color: var(--ink-soft); font-size: .7rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; white-space: nowrap; }
 
   .toolbar { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; align-items: center; }
   .search {
@@ -108,8 +105,7 @@
     background: var(--card); color: var(--ink); font-size: .82rem; font-weight: 500; white-space: nowrap;
   }
   .chip[aria-pressed="true"] { background: var(--ink); color: var(--paper); border-color: var(--ink); }
-  .chip.accent[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
-  #favToggle[aria-pressed="true"] { background: var(--blue); border-color: var(--blue); color: #fff; }
+  .chip.accent[aria-pressed="true"] { background: var(--blue); border-color: var(--blue); color: #fff; }  /* Favorites + My bar: "yours" */
 
   .filters { padding: 16px 0 6px; border-bottom: 1px solid var(--line); }
   .filt-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 9px; }
@@ -119,19 +115,20 @@
 
   main { padding: 22px 0 96px; }
   .listhead { display: flex; align-items: baseline; gap: 12px; margin: 2px 0 16px; }
+  .listhead[hidden] { display: none; }
   .listhead .count { font-family: var(--serif); font-weight: 600; font-size: 1.15rem; letter-spacing: -.01em; color: var(--ink); text-transform: none; }
   .listhead .sub { font-family: var(--sans); font-weight: 700; font-size: .64rem; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-soft); }
   .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(248px, 1fr)); gap: 14px; align-items: start; }
-  @media (max-width: 540px) { .grid { grid-template-columns: 1fr; } }
+  @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
 
   .grouphead { grid-column: 1 / -1; font-family: var(--sans); font-weight: 700; text-transform: uppercase; letter-spacing: .13em; font-size: .68rem; color: var(--ink-soft); margin: 10px 0 -2px; }
   .grouphead:first-child { margin-top: 0; }
   .grouphead.favs { color: var(--blue); }
 
   .scrollfade {
-    position: fixed; left: 0; right: 0; bottom: 0; height: 72px; z-index: 20;
-    pointer-events: none; opacity: 1; transition: opacity .2s ease;
-    background: linear-gradient(to bottom, transparent, var(--paper) 88%);
+    position: fixed; left: 0; right: 0; bottom: 0; height: 54px; z-index: 20;
+    pointer-events: none; opacity: 0; transition: opacity .25s ease;
+    background: linear-gradient(to bottom, transparent, var(--paper));
   }
 
   .card {
@@ -140,17 +137,20 @@
     display: flex; flex-direction: column; gap: 4px; cursor: pointer;
     transition: transform .1s ease, box-shadow .1s ease;
   }
-  .card:hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0 var(--ink); }
-  .card:hover h3 { color: var(--accent); }
+  @media (hover: hover) {
+    .card:hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0 var(--ink); }
+    .card:hover h3 { color: var(--accent); }
+  }
+  .card:active { background: var(--paper-2); }
   .card:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
-  .card h3 { font-size: 1.3rem; line-height: 1.1; padding-right: 22px; }
+  .card h3 { font-size: 1.3rem; line-height: 1.1; padding-right: 30px; }
   .card .base { font-family: var(--sans); font-size: .64rem; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; color: var(--accent); }
   .card .pour { color: var(--ink-soft); font-size: .87rem; line-height: 1.4; }
   .card .tags { display: flex; gap: 10px; flex-wrap: wrap; margin-top: auto; padding-top: 9px; }
   .tag { font-size: .64rem; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--ink-soft); border: 0; border-radius: 0; padding: 0; }
   .fav {
-    position: absolute; top: 10px; right: 8px; border: 0; background: transparent;
-    font-size: 1.1rem; line-height: 1; color: var(--line); padding: 4px;
+    position: absolute; top: 4px; right: 2px; border: 0; background: transparent;
+    font-size: 1.1rem; line-height: 1; color: var(--line); padding: 9px;
   }
   .fav[aria-pressed="true"] { color: var(--blue); }
   .card .bar-badge {
@@ -172,7 +172,12 @@
     background: var(--paper); border-left: 1.5px solid var(--ink);
     overflow-y: auto; padding: 28px 32px 60px; box-shadow: -20px 0 60px rgba(0,0,0,.18);
   }
-  .sheet .close { position: absolute; top: 14px; right: 16px; font-size: 1.5rem; background: transparent; border: 0; color: var(--ink-soft); }
+  .sheet .close {
+    position: absolute; top: 8px; right: 8px; width: 40px; height: 40px; font-size: 1.6rem;
+    display: flex; align-items: center; justify-content: center;
+    background: transparent; border: 0; color: var(--ink-soft); border-radius: 999px; z-index: 2;
+  }
+  .sheet .close:hover { background: var(--paper-2); }
   .sheet .eyebrow { font-family: var(--sans); text-transform: uppercase; letter-spacing: .14em; font-size: .68rem; font-weight: 700; color: var(--accent); }
   .sheet h2 { font-size: clamp(2rem, 1.55rem + 2vw, 2.6rem); margin: 5px 0 3px; }
   .sheet .aka { color: var(--ink-soft); font-style: italic; font-size: .9rem; }
@@ -216,9 +221,29 @@
   }
   body.dragging .drophint { display: flex; }
 
-  @media (max-width: 520px) {
-    .sheet { padding: 22px 18px 50px; }
-    .brand .count { width: 100%; margin: 0; }
+  @media (max-width: 600px) {
+    header.top { position: static; }                    /* don't pin a tall header on phones */
+    .top .wrap { padding-top: 14px; padding-bottom: 12px; }
+    .toolbar { margin-top: 12px; }
+    .filt-row { align-items: flex-start; }
+    .filt-row .label { flex: 0 0 100%; min-width: 0; margin: 0 0 6px; }  /* label on its own line, chips flush left */
+    .listhead { margin-bottom: 12px; }
+    .card { min-height: 0; }
+    .sheet {
+      width: 100%; border-left: 0; border-radius: 16px 16px 0 0;
+      top: auto; bottom: 0; height: 92%; padding: 24px 20px 40px;
+    }
+    .sheet::before {
+      content: ""; position: absolute; top: 8px; left: 50%; transform: translateX(-50%);
+      width: 40px; height: 4px; border-radius: 999px; background: var(--line-strong); opacity: .3;
+    }
+    .barpanel .sheet { border-right: 0; }
+  }
+  @media (pointer: coarse) {
+    .fav { padding: 12px; }
+    .seg button { padding: 10px 15px; }
+    .linkbtn { padding: 5px 0; }
+    .more-btn, .clearall { padding: 6px 4px; }
   }
 </style>
 </head>
@@ -254,7 +279,7 @@
 <div class="wrap filters" id="filters"></div>
 
 <main class="wrap">
-  <div class="listhead">
+  <div class="listhead" id="listhead">
     <span class="count" id="count"></span>
     <span class="sub" id="listsort">A–Z</span>
   </div>
@@ -365,7 +390,7 @@
   function afterFirstLoad() {
     if (firstLoadDone) return;
     firstLoadDone = true;
-    if (location.hash.length > 1) openDetail(decodeURIComponent(location.hash.slice(1)), true);
+    if (location.hash.length > 1) openDetail(decodeURIComponent(location.hash.slice(1)), true, true);
   }
 
   function ingestFile(file) {
@@ -566,7 +591,9 @@
     }
     if (wish.length) html += '<div class="wishlist-head">On the list — needs a spec</div>' + wish.map(cardHTML).join("");
     grid.innerHTML = html;
-    document.getElementById("empty").hidden = actives.length + wish.length > 0;
+    var anyResults = actives.length + wish.length > 0;
+    document.getElementById("empty").hidden = anyResults;
+    document.getElementById("listhead").hidden = !anyResults;
 
     grid.querySelectorAll(".card").forEach(function (el) {
       el.addEventListener("click", function (e) {
@@ -602,8 +629,8 @@
     var badge = "";
     if (state.bar.size && c.status !== "wishlist") {
       var m = missingRefs(c);
-      if (!m.length) badge = '<span class="bar-badge ok">you can make this</span>';
-      else if (m.length === 1) badge = '<span class="bar-badge close">missing ' + (ingById[m[0]] ? ingById[m[0]].name : m[0]) + '</span>';
+      if (!m.length) badge = '<span class="bar-badge ok">☑︎ you can make this</span>';
+      else if (m.length === 1) badge = '<span class="bar-badge close">☐︎ missing ' + (ingById[m[0]] ? ingById[m[0]].name : m[0]) + '</span>';
     }
     return '<article class="card" tabindex="0" data-id="' + c.id + '">' +
       '<button class="fav" aria-pressed="' + (state.fav.has(c.id) ? "true" : "false") + '" aria-label="Favorite">' +
@@ -617,16 +644,22 @@
   }
 
   // ---------- detail ----------
-  function openDetail(id, resetScale) {
+  var navPushed = false;   // did we add a history entry we can pop to close?
+  function openDetail(id, resetScale, fromHistory) {
     var c = COCKTAILS.find(function (x) { return x.id === id; });
     if (!c) return;
     if (resetScale) state.scale = 1;
-    history.replaceState(null, "", "#" + id);
+    var wasOpen = document.getElementById("overlay").classList.contains("open");
+    if (fromHistory) { /* URL already reflects this state */ }
+    else if (wasOpen) history.replaceState(null, "", "#" + id);
+    else { history.pushState({ sheet: id }, "", "#" + id); navPushed = true; }
     var sheet = document.getElementById("sheet");
     sheet.innerHTML = detailHTML(c);
+    sheet.style.transform = "";
+    sheet.style.transition = "";
     document.getElementById("overlay").classList.add("open");
     document.body.style.overflow = "hidden";
-    sheet.querySelector(".close").addEventListener("click", closeDetail);
+    sheet.querySelector(".close").addEventListener("click", function () { closeDetail(); });
     sheet.querySelector(".d-fav").addEventListener("click", function () { toggleFav(id); openDetail(id); });
     sheet.querySelectorAll("[data-scale]").forEach(function (b) {
       b.addEventListener("click", function () {
@@ -638,10 +671,16 @@
     if (cs) cs.addEventListener("change", function () { state.scale = Math.max(0.1, parseFloat(cs.value) || 1); openDetail(id); });
     sheet.scrollTop = 0;
   }
-  function closeDetail() {
-    document.getElementById("overlay").classList.remove("open");
+  function closeDetail(fromHistory) {
+    var overlay = document.getElementById("overlay");
+    if (!overlay.classList.contains("open")) return;
+    if (!fromHistory && navPushed) { history.back(); return; }   // let popstate finish the close
+    navPushed = false;
+    overlay.classList.remove("open");
     document.body.style.overflow = "";
-    history.replaceState(null, "", location.pathname + location.search);
+    var sheet = document.getElementById("sheet");
+    sheet.style.transition = ""; sheet.style.transform = "";
+    if (!fromHistory && location.hash.length > 1) history.replaceState(null, "", location.pathname + location.search);
   }
   function detailHTML(c) {
     var src = c.source || {};
@@ -732,10 +771,14 @@
     html += "</div>";
     var sheet = document.getElementById("barSheet");
     sheet.innerHTML = html;
-    document.getElementById("barOverlay").classList.add("open");
+    sheet.style.transform = ""; sheet.style.transition = "";
+    var barOv = document.getElementById("barOverlay");
+    var wasOpen = barOv.classList.contains("open");
+    barOv.classList.add("open");
     document.body.style.overflow = "hidden";
+    if (!wasOpen) history.pushState({ bar: 1 }, "");
 
-    sheet.querySelector(".close").addEventListener("click", closeBar);
+    sheet.querySelector(".close").addEventListener("click", function () { closeBar(); });
     sheet.addEventListener("change", function (e) {
       if (e.target.id === "basicsChk") { state.assumeBasics = e.target.checked; save(LS.basics, state.assumeBasics); render(); return; }
       if (e.target.type === "checkbox") {
@@ -761,9 +804,14 @@
       render();
     });
   }
-  function closeBar() {
-    document.getElementById("barOverlay").classList.remove("open");
+  function closeBar(fromHistory) {
+    var barOv = document.getElementById("barOverlay");
+    if (!barOv.classList.contains("open")) return;
+    if (!fromHistory && history.state && history.state.bar) { history.back(); return; }
+    barOv.classList.remove("open");
     document.body.style.overflow = "";
+    var sheet = document.getElementById("barSheet");
+    sheet.style.transition = ""; sheet.style.transform = "";
   }
 
   // ---------- misc ----------
@@ -773,11 +821,38 @@
   var fadeEl = document.getElementById("scrollfade");
   function updateFade() {
     if (!fadeEl) return;
-    var atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 8;
-    fadeEl.style.opacity = atBottom ? "0" : "1";
+    var doc = document.documentElement;
+    var longEnough = doc.scrollHeight > window.innerHeight * 1.6;
+    var atBottom = window.innerHeight + window.scrollY >= doc.scrollHeight - 8;
+    fadeEl.style.opacity = (longEnough && !atBottom) ? "1" : "0";
   }
   window.addEventListener("scroll", updateFade, { passive: true });
   window.addEventListener("resize", updateFade);
+
+  // swipe a bottom-sheet down to dismiss (touch, narrow viewports only)
+  var mqNarrow = window.matchMedia("(max-width: 600px)");
+  function enableSwipeClose(el, onClose) {
+    var startY = 0, dy = 0, dragging = false;
+    el.addEventListener("touchstart", function (e) {
+      if (!mqNarrow.matches || el.scrollTop > 0 || e.touches.length !== 1) { dragging = false; return; }
+      startY = e.touches[0].clientY; dy = 0; dragging = true;
+      el.style.transition = "";
+    }, { passive: true });
+    el.addEventListener("touchmove", function (e) {
+      if (!dragging) return;
+      dy = e.touches[0].clientY - startY;
+      el.style.transform = dy > 0 ? "translateY(" + dy + "px)" : "";
+    }, { passive: true });
+    el.addEventListener("touchend", function () {
+      if (!dragging) return;
+      dragging = false;
+      el.style.transition = "transform .2s ease";
+      if (dy > 90) onClose();
+      else el.style.transform = "";
+    });
+  }
+  enableSwipeClose(document.getElementById("sheet"), function () { closeDetail(); });
+  enableSwipeClose(document.getElementById("barSheet"), function () { closeBar(); });
 
   document.getElementById("q").addEventListener("input", function () { state.q = this.value.trim(); render(); });
   document.getElementById("u-oz").addEventListener("click", function () { setUnits("oz"); });
@@ -795,9 +870,10 @@
     if (e.key === "Escape") { closeDetail(); closeBar(); }
     if (e.key === "/" && document.activeElement.tagName !== "INPUT") { e.preventDefault(); document.getElementById("q").focus(); }
   });
-  window.addEventListener("hashchange", function () {
-    if (location.hash.length > 1) openDetail(decodeURIComponent(location.hash.slice(1)), true);
-    else closeDetail();
+  window.addEventListener("popstate", function () {
+    if (document.getElementById("barOverlay").classList.contains("open")) { closeBar(true); return; }
+    if (location.hash.length > 1) openDetail(decodeURIComponent(location.hash.slice(1)), true, true);
+    else closeDetail(true);
   });
 
   // ---------- collection load / reset / drag-drop ----------
