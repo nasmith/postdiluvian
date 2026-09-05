@@ -1,0 +1,1060 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Postdiluvian — editor</title>
+<meta name="description" content="Edit the Postdiluvian cocktails.json and ingredients.json masters.">
+<script>try{var t=localStorage.getItem("pd.theme");if(t==="light"||t==="dark")document.documentElement.setAttribute("data-theme",t);}catch(e){}</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<style>
+  * { box-sizing: border-box; }
+  [hidden] { display: none !important; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; background: var(--paper); color: var(--ink); font-family: var(--sans); font-size: 15px; line-height: 1.5; }
+  h1, h2, h3 { font-family: var(--serif); font-weight: 600; margin: 0; letter-spacing: -.01em; }
+  a { color: var(--blue); }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+
+  .bar {
+    position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 12px;
+    padding: 12px 18px; background: var(--paper); border-bottom: 1.5px solid var(--ink); flex-wrap: wrap;
+  }
+  .bar h1 { font-size: 1.3rem; }
+  .bar h1 .em { color: var(--accent-soft); font-style: italic; font-weight: 400; }
+  .bar .spacer { flex: 1; }
+  .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--line-strong); flex: none; }
+  .dot.dirty { background: var(--accent); }
+  .valbadge { font-size: .8rem; font-weight: 700; padding: 3px 9px; border-radius: 999px; border: 1.5px solid var(--line-strong); white-space: nowrap; }
+  .valbadge.ok { color: #3f7a3a; border-color: currentColor; }
+  .valbadge.err { color: var(--accent); border-color: currentColor; }
+  :root[data-theme="dark"] .valbadge.ok, :root:not([data-theme="light"]) .valbadge.ok { color: #86c072; }
+
+  .btn { border: 1.5px solid var(--line-strong); background: var(--card); border-radius: var(--radius); padding: 7px 13px; font-size: .85rem; font-weight: 600; }
+  .btn:hover { background: var(--paper-2); }
+  .btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn.primary:disabled { opacity: .45; cursor: not-allowed; }
+  .btn.ghost { border-color: transparent; background: transparent; text-decoration: underline; padding: 4px 6px; }
+  .btn.danger { color: var(--accent); }
+
+  .tabs { display: flex; gap: 4px; padding: 10px 18px 0; border-bottom: 1px solid var(--line); background: var(--paper); position: sticky; top: 57px; z-index: 19; flex-wrap: wrap; }
+  .tabs button { border: 1.5px solid var(--line); border-bottom: 0; background: var(--paper-2); padding: 7px 14px; border-radius: var(--radius) var(--radius) 0 0; font-size: .85rem; font-weight: 600; color: var(--ink-soft); }
+  .tabs button[aria-selected="true"] { background: var(--card); color: var(--ink); border-color: var(--ink); }
+  .tabs .count { opacity: .5; font-weight: 400; }
+
+  .wrap { display: grid; grid-template-columns: 300px 1fr; gap: 0; min-height: calc(100vh - 120px); }
+  @media (max-width: 820px) { .wrap { grid-template-columns: 1fr; } .list { border-right: 0; border-bottom: 1.5px solid var(--line); max-height: 40vh; } }
+
+  .list { border-right: 1.5px solid var(--line); padding: 12px; overflow-y: auto; }
+  .list .listtop { display: flex; gap: 8px; margin-bottom: 10px; }
+  .list input.search { flex: 1; padding: 7px 10px; border: 1.5px solid var(--line-strong); border-radius: var(--radius); background: var(--card); }
+  .list .row { padding: 8px 10px; border-radius: var(--radius); cursor: pointer; display: flex; justify-content: space-between; gap: 8px; align-items: baseline; }
+  .list .row:hover { background: var(--paper-2); }
+  .list .row[aria-current="true"] { background: var(--ink); color: var(--paper); }
+  .list .row .sub { font-size: .72rem; opacity: .6; white-space: nowrap; }
+  .list .row.invalid::after { content: "!"; color: var(--accent); font-weight: 800; }
+  .list .row[aria-current="true"].invalid::after { color: #fff; }
+  .list .grouplabel { font-size: .66rem; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-soft); margin: 14px 0 4px; }
+
+  .pane { padding: 20px 24px 120px; overflow-y: auto; }
+  .pane .placeholder { color: var(--ink-soft); font-style: italic; padding: 40px 0; }
+
+  .field { margin-bottom: 13px; }
+  .field > label { display: block; font-size: .7rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-soft); margin-bottom: 4px; }
+  .field input[type=text], .field input[type=number], .field input[type=url], .field select, .field textarea {
+    width: 100%; padding: 7px 10px; border: 1.5px solid var(--line-strong); border-radius: var(--radius); background: var(--card);
+  }
+  .field textarea { min-height: 64px; resize: vertical; font-family: var(--sans); }
+  .field .hint { font-size: .76rem; color: var(--ink-soft); margin-top: 3px; }
+  .field.bad input, .field.bad select, .field.bad textarea { border-color: var(--accent); }
+  .field .err { color: var(--accent); font-size: .78rem; margin-top: 3px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .row3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; }
+  @media (max-width: 560px) { .row2, .row3 { grid-template-columns: 1fr; } }
+
+  .chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .chips .chip { display: inline-flex; align-items: center; gap: 5px; padding: 3px 8px; border: 1.5px solid var(--line-strong); border-radius: 999px; font-size: .8rem; background: var(--card); }
+  .chips .chip button { border: 0; background: transparent; color: var(--ink-soft); padding: 0; line-height: 1; font-size: 1rem; }
+  .chips input { border: 0; background: transparent; outline: none; min-width: 90px; flex: 1; padding: 4px; }
+
+  .ingrow { display: grid; grid-template-columns: 1.4fr auto 1fr auto; gap: 8px; align-items: start; padding: 9px 0; border-top: 1px solid var(--line); }
+  .ingrow:first-of-type { border-top: 0; }
+  .ingrow .amt { display: flex; gap: 6px; align-items: center; }
+  .ingrow .amt input[type=number] { width: 68px; }
+  .ingrow .amt select { width: auto; }
+  .ingrow .sec { display: flex; gap: 6px; flex-wrap: wrap; }
+  .ingrow .sec input { width: 100%; }
+  .ingrow .ctl { display: flex; flex-direction: column; gap: 2px; }
+  .ingrow .ctl button { border: 1.5px solid var(--line); background: var(--card); border-radius: 4px; width: 26px; height: 22px; font-size: .8rem; line-height: 1; padding: 0; }
+  .ingrow .resolved { font-size: .72rem; color: var(--ink-soft); margin-top: 2px; }
+  .ingrow .resolved.new { color: var(--accent); }
+  @media (max-width: 700px) { .ingrow { grid-template-columns: 1fr; } }
+
+  .sectionh { font-family: var(--serif); font-size: 1.05rem; margin: 22px 0 8px; padding-top: 14px; border-top: 1.5px solid var(--ink); }
+  .subactions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
+
+  .preview { margin-top: 10px; border: 1.5px solid var(--ink); border-radius: var(--radius); padding: 16px 18px; background: var(--card); }
+  .preview .pv-base { font-size: .64rem; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; color: var(--accent); }
+  .preview h3 { font-size: 1.5rem; margin: 2px 0; }
+  .preview .pv-meta { font-size: .82rem; color: var(--ink-soft); margin-bottom: 10px; }
+  .preview ul { list-style: none; margin: 8px 0; padding: 0; }
+  .preview li { display: flex; gap: 12px; padding: 3px 0; }
+  .preview li .a { font-family: var(--serif); font-weight: 600; min-width: 130px; text-align: right; font-variant-numeric: tabular-nums; }
+  .preview li.miss .n { color: var(--accent); }
+  .preview ol { margin: 8px 0 0; padding-left: 18px; font-size: .9rem; }
+  .preview .pv-note { font-style: italic; color: var(--ink-soft); font-size: .86rem; margin-top: 8px; }
+
+  .jsonwrap textarea { width: 100%; min-height: 62vh; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12.5px; padding: 12px; border: 1.5px solid var(--line-strong); border-radius: var(--radius); background: var(--card); white-space: pre; }
+  .jsonwrap .err { color: var(--accent); font-size: .82rem; margin: 4px 0; white-space: pre-wrap; }
+  .jsonmini textarea { min-height: 340px; }
+
+  .valpanel { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--card); border-top: 1.5px solid var(--ink); max-height: 42vh; display: flex; flex-direction: column; transform: translateY(calc(100% - 34px)); transition: transform .18s ease; }
+  .valpanel.open { transform: translateY(0); }
+  .valpanel .vph { display: flex; align-items: center; gap: 10px; padding: 7px 16px; cursor: pointer; font-size: .82rem; font-weight: 700; }
+  .valpanel .vpbody { overflow-y: auto; padding: 4px 16px 16px; }
+  .valpanel .issue { font-size: .82rem; padding: 4px 0; border-top: 1px solid var(--line); cursor: pointer; display: flex; gap: 8px; }
+  .valpanel .issue:hover { color: var(--accent); }
+  .valpanel .issue .tag { font-weight: 700; flex: none; }
+  .valpanel .issue.e .tag { color: var(--accent); }
+  .valpanel .issue.w .tag { color: var(--gold); }
+
+  .loadscreen { padding: 60px 24px; max-width: 640px; margin: 0 auto; text-align: center; }
+  .loadscreen h2 { font-size: 1.6rem; margin-bottom: 8px; }
+  .loadscreen p { color: var(--ink-soft); }
+  .dropzone { margin-top: 22px; border: 2px dashed var(--line-strong); border-radius: 12px; padding: 34px; color: var(--ink-soft); }
+  .dropzone.hot { border-color: var(--blue); background: rgba(31,59,214,.05); color: var(--blue); }
+  .filestate { display: flex; gap: 16px; justify-content: center; margin-top: 16px; font-size: .85rem; }
+  .filestate .f.ok { color: #3f7a3a; }
+  :root[data-theme="dark"] .filestate .f.ok, :root:not([data-theme="light"]) .filestate .f.ok { color: #86c072; }
+
+  .toast { position: fixed; left: 50%; bottom: 46px; transform: translateX(-50%); background: var(--ink); color: var(--paper); padding: 10px 18px; border-radius: var(--radius); font-size: .86rem; z-index: 40; box-shadow: var(--shadow); max-width: 90vw; }
+</style>
+</head>
+<body>
+
+<div class="bar">
+  <h1>Postdiluvian <span class="em">editor</span></h1>
+  <span class="dot" id="dirtyDot" title="unsaved changes"></span>
+  <span class="valbadge ok" id="valBadge">—</span>
+  <span class="spacer"></span>
+  <input type="file" id="fileInput" accept=".json,application/json" multiple hidden>
+  <button class="btn" id="loadBtn">Load files…</button>
+  <button class="btn primary" id="saveBtn" disabled>Save both</button>
+  <a class="btn ghost" href="index.html">← browser</a>
+</div>
+
+<div class="tabs" id="tabs" hidden>
+  <button data-tab="recipes" aria-selected="true">Recipes <span class="count" id="cRecipes"></span></button>
+  <button data-tab="ingredients" aria-selected="false">Ingredients <span class="count" id="cIngredients"></span></button>
+  <button data-tab="json" aria-selected="false">JSON</button>
+</div>
+
+<div id="loadScreen" class="loadscreen">
+  <h2>Load your two master files</h2>
+  <p>Pick <code>cocktails.json</code> and <code>ingredients.json</code> from your
+     <code>postdiluvian-private</code> folder (select both, or load one at a time).
+     Everything runs in your browser — nothing is uploaded. Saving downloads the
+     edited files for you to move back into the folder.</p>
+  <div class="dropzone" id="dropzone">
+    Drop the files here, or
+    <button class="btn" id="loadBtn2">choose files</button>
+    <div class="filestate">
+      <span class="f" id="fsC">cocktails.json — not loaded</span>
+      <span class="f" id="fsI">ingredients.json — not loaded</span>
+    </div>
+  </div>
+</div>
+
+<div id="app" hidden>
+  <div class="wrap" id="wrapRecipes">
+    <div class="list" id="listRecipes">
+      <div class="listtop">
+        <input class="search" id="searchRecipes" placeholder="Search recipes…" autocomplete="off">
+        <button class="btn" id="newRecipe">+ New</button>
+      </div>
+      <div id="listRecipesBody"></div>
+    </div>
+    <div class="pane" id="paneRecipe"><div class="placeholder">Select a recipe, or add one.</div></div>
+  </div>
+
+  <div class="wrap" id="wrapIngredients" hidden>
+    <div class="list" id="listIngredients">
+      <div class="listtop">
+        <input class="search" id="searchIngredients" placeholder="Search ingredients…" autocomplete="off">
+        <button class="btn" id="newIngredient">+ New</button>
+      </div>
+      <div id="listIngredientsBody"></div>
+    </div>
+    <div class="pane" id="paneIngredient"><div class="placeholder">Select an ingredient, or add one.</div></div>
+  </div>
+
+  <div id="wrapJson" class="pane jsonwrap" hidden>
+    <p class="hint">Edit the raw files. Valid JSON is merged into the editor live; invalid JSON is held until you fix it.</p>
+    <div class="row2">
+      <div>
+        <h3 style="font-size:.9rem;margin:8px 0">cocktails.json</h3>
+        <div class="err" id="jsonErrC" hidden></div>
+        <textarea id="jsonC" spellcheck="false"></textarea>
+      </div>
+      <div>
+        <h3 style="font-size:.9rem;margin:8px 0">ingredients.json</h3>
+        <div class="err" id="jsonErrI" hidden></div>
+        <textarea id="jsonI" spellcheck="false"></textarea>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="valpanel" id="valPanel">
+  <div class="vph" id="valPanelHead">
+    <span id="valPanelTitle">No issues</span>
+    <span class="spacer" style="flex:1"></span>
+    <span id="valPanelChevron">▲</span>
+  </div>
+  <div class="vpbody" id="valPanelBody"></div>
+</div>
+
+<datalist id="dlIngredients"></datalist>
+<datalist id="dlTags"></datalist>
+
+<script>
+(function () {
+  "use strict";
+
+  var METHODS = ["shake", "dry-shake", "stir", "build", "swizzle", "blend", "throw"];
+  var GLASSES = ["coupe", "old-fashioned", "rocks", "nick-and-nora", "flute", "collins", "highball", "wine"];
+  var SERVICES = ["up", "rocks", "long", "neat"];
+  var ICES = ["none", "large-cube", "cubed", "crushed"];
+  var CATEGORIES = ["spirit", "vermouth", "fortified", "wine", "liqueur", "amaro", "bitters", "juice", "syrup", "other"];
+  var FAMILIES = ["gin", "whiskey", "rum", "agave", "brandy", "vodka", "aquavit", "other"];
+  var BASE_CATS = ["spirit", "amaro", "fortified", "liqueur", "wine"];
+  // amount "kinds" -> how they serialize
+  var KINDS = [
+    { k: "ml", label: "Volume (ml)", num: "ml" },
+    { k: "tsp", label: "Teaspoon", num: "count", per: 5, unit: "tsp" },
+    { k: "barspoon", label: "Bar spoon", num: "count", per: 5, unit: "barspoon" },
+    { k: "dash", label: "Dashes", num: "amount", unit: "dash" },
+    { k: "drops", label: "Drops", num: "amount", unit: "drops" },
+    { k: "piece", label: "Pieces", num: "amount", unit: "piece" },
+    { k: "rinse", label: "Rinse", unit: "rinse" },
+    { k: "top", label: "Top with", unit: "top" },
+    { k: "leaves", label: "Leaves", unit: "leaves" },
+    { k: "sprig", label: "Sprig", unit: "sprig" }
+  ];
+
+  var S = {
+    C: null, I: null,            // parsed file objects
+    tab: "recipes",
+    selRecipe: null, selIng: null,
+    snapshot: "", mlPerOz: 30,
+    issues: { errors: [], warnings: [] }
+  };
+  var $ = function (id) { return document.getElementById(id); };
+  var el = function (tag, cls, html) { var e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
+  var esc = function (s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (m) { return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[m]; }); };
+  var slug = function (s) { return String(s || "").toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, ""); };
+  var trimNum = function (n) { return (Math.round(n * 100) / 100).toString(); };
+
+  // ---------------------------------------------------------------- load ------
+  function classify(obj) {
+    if (obj && Array.isArray(obj.cocktails)) return "C";
+    if (obj && Array.isArray(obj.ingredients)) return "I";
+    return null;
+  }
+  function ingestFiles(fileList) {
+    var files = [].slice.call(fileList);
+    var done = 0;
+    files.forEach(function (f) {
+      f.text().then(function (txt) {
+        var obj;
+        try { obj = JSON.parse(txt); } catch (e) { toast("“" + f.name + "” isn’t valid JSON: " + e.message); return; }
+        var kind = classify(obj);
+        if (!kind) { toast("“" + f.name + "” doesn’t look like cocktails.json or ingredients.json."); return; }
+        if (kind === "C") S.C = obj; else S.I = obj;
+        refreshLoadState();
+      }).finally(function () { done++; });
+    });
+  }
+  function refreshLoadState() {
+    $("fsC").textContent = S.C ? "cocktails.json — " + S.C.cocktails.length + " recipes" : "cocktails.json — not loaded";
+    $("fsC").className = "f" + (S.C ? " ok" : "");
+    $("fsI").textContent = S.I ? "ingredients.json — " + S.I.ingredients.length + " ingredients" : "ingredients.json — not loaded";
+    $("fsI").className = "f" + (S.I ? " ok" : "");
+    if (S.C && S.I) startApp();
+  }
+  function startApp() {
+    S.mlPerOz = (S.C.meta && S.C.meta.mlPerOz) || (S.I.meta && S.I.meta.mlPerOz) || 30;
+    $("loadScreen").hidden = true;
+    $("app").hidden = false;
+    $("tabs").hidden = false;
+    S.snapshot = snapshotStr();
+    rebuildDatalists();
+    selectTab("recipes");
+    renderRecipeList(); renderIngredientList();
+    if (S.C.cocktails[0]) selectRecipe(S.C.cocktails[0].id);
+    validateAndPaint();
+  }
+
+  // ---------------------------------------------------------------- serialize -
+  function cleanSource(src) {
+    src = src || {}; var o = {};
+    ["book", "author", "url", "page", "note"].forEach(function (k) {
+      var v = src[k];
+      if (v === "" || v == null) return;
+      o[k] = k === "page" ? (parseInt(v, 10) || v) : v;
+    });
+    return o;
+  }
+  function serCocktail(c) {
+    var o = {};
+    o.id = c.id; o.name = c.name || "";
+    o.aka = c.aka || []; o.variantOf = c.variantOf || null;
+    o.status = c.status || "active";
+    o.base = c.base || [];
+    o.method = c.method || "stir"; o.glass = c.glass || "coupe";
+    o.service = c.service || "up"; o.ice = c.ice || "none";
+    o.garnish = c.garnish || "None";
+    o.tags = (c.tags || []).slice().sort();
+    o.notes = c.notes || "";
+    o.source = cleanSource(c.source);
+    o.ingredients = (c.ingredients || []).map(function (i) {
+      var e = { ref: i.ref };
+      if (i.ml != null && i.ml !== "") e.ml = +i.ml;
+      if (i.amount != null && i.amount !== "") e.amount = +i.amount;
+      if (i.unit) e.unit = i.unit;
+      if (i.approx) e.approx = i.approx;
+      if (i.brand) e.brand = i.brand;
+      if (i.note) e.note = i.note;
+      if (i.optional) e.optional = true;
+      return e;
+    });
+    o.steps = c.steps || [];
+    return o;
+  }
+  function serIngredient(g) {
+    var o = { id: g.id, name: g.name || "", category: g.category || "other",
+              family: g.family === undefined ? null : g.family,
+              aliases: g.aliases || [], brands: g.brands || [] };
+    if (g.pantry) o.pantry = true;
+    if (g.notes) o.notes = g.notes;
+    return o;
+  }
+  function fileC() {
+    var meta = Object.assign({}, S.C.meta || {});
+    meta.count = S.C.cocktails.length;
+    return { meta: meta, cocktails: S.C.cocktails.map(serCocktail) };
+  }
+  function fileI() {
+    return { meta: S.I.meta || {}, ingredients: S.I.ingredients.map(serIngredient) };
+  }
+  function textC() { return JSON.stringify(fileC(), null, 2) + "\n"; }
+  function textI() { return JSON.stringify(fileI(), null, 2) + "\n"; }
+  function snapshotStr() { return textC() + " " + textI(); }
+
+  // ---------------------------------------------------------------- dirty -----
+  function markDirty() {
+    var d = snapshotStr() !== S.snapshot;
+    $("dirtyDot").className = "dot" + (d ? " dirty" : "");
+    return d;
+  }
+  window.addEventListener("beforeunload", function (e) {
+    if (S.C && S.I && snapshotStr() !== S.snapshot) { e.preventDefault(); e.returnValue = ""; }
+  });
+
+  // ---------------------------------------------------------------- validate --
+  function validate() {
+    var errors = [], warnings = [];
+    var E = function (where, msg, field) { errors.push({ where: where, msg: msg, field: field }); };
+    var W = function (where, msg, field) { warnings.push({ where: where, msg: msg, field: field }); };
+    var ings = S.I.ingredients, ckts = S.C.cocktails;
+
+    var SLUG = /^[a-z0-9-]+$/;
+    var ids = {}, aliasOwner = {};
+    ings.forEach(function (it) {
+      var w = "ing:" + it.id;
+      if (!SLUG.test(it.id || "")) E(w, "id must be lowercase letters, digits and hyphens", "id");
+      if (ids[it.id]) E(w, "duplicate id");
+      ids[it.id] = it;
+      if (CATEGORIES.indexOf(it.category) < 0) E(w, "bad category “" + it.category + "”", "category");
+      if (it.family !== null && it.family !== undefined && FAMILIES.indexOf(it.family) < 0) E(w, "bad family “" + it.family + "”", "family");
+      if (it.category === "spirit" && (it.family === null || it.family === undefined)) E(w, "a spirit needs a family", "family");
+      (it.aliases || []).forEach(function (a) {
+        a = String(a).toLowerCase();
+        if (a === it.id) return;
+        if (ids[a] || ings.some(function (x) { return x.id === a; })) E(w, "alias “" + a + "” collides with an id");
+        if (aliasOwner[a]) E(w, "alias “" + a + "” also on " + aliasOwner[a]);
+        aliasOwner[a] = it.id;
+      });
+    });
+
+    var byId = ids, cids = {}, used = {};
+    ckts.forEach(function (c) {
+      var w = "ckt:" + c.id;
+      if (!SLUG.test(c.id || "")) E(w, "id must be lowercase letters, digits and hyphens", "id");
+      if (cids[c.id]) E(w, "duplicate id");
+      cids[c.id] = c;
+      if (!c.name) E(w, "no name", "name");
+      if (METHODS.indexOf(c.method) < 0) E(w, "bad method", "method");
+      if (GLASSES.indexOf(c.glass) < 0) E(w, "bad glass", "glass");
+      if (SERVICES.indexOf(c.service) < 0) E(w, "bad service", "service");
+      if (ICES.indexOf(c.ice) < 0) E(w, "bad ice", "ice");
+      if (["active", "wishlist"].indexOf(c.status) < 0) E(w, "bad status", "status");
+      if (!c.ingredients || !c.ingredients.length) E(w, "no ingredients");
+      var refs = {}; (c.ingredients || []).forEach(function (i) { refs[i.ref] = 1; });
+      (c.base || []).forEach(function (b) {
+        if (!byId[b]) E(w, "base “" + b + "” is not an ingredient id", "base");
+        else if (BASE_CATS.indexOf(byId[b].category) < 0) W(w, "base “" + b + "” is category " + byId[b].category, "base");
+        if (!refs[b]) W(w, "base “" + b + "” is not among its ingredients", "base");
+      });
+      if (c.variantOf && !cids[c.variantOf] && !ckts.some(function (x) { return x.id === c.variantOf; })) E(w, "variantOf “" + c.variantOf + "” not found", "variantOf");
+      (c.ingredients || []).forEach(function (i) {
+        used[i.ref] = 1;
+        if (!byId[i.ref]) E(w, "ingredient “" + i.ref + "” not in the vocabulary", "ings");
+        if (i.unit && KINDS.map(function (x) { return x.unit; }).indexOf(i.unit) < 0) E(w, "bad unit “" + i.unit + "”", "ings");
+        if (i.ml == null && i.amount == null && !i.unit) W(w, i.ref + " has no amount", "ings");
+        if (i.ml && +i.ml > 180) W(w, i.ref + " is " + i.ml + " ml — large pour", "ings");
+      });
+    });
+    Object.keys(byId).forEach(function (id) { if (!used[id]) W("ing:" + id, "unused by any recipe"); });
+
+    S.issues = { errors: errors, warnings: warnings };
+    return S.issues;
+  }
+  function validateAndPaint() {
+    markDirty();
+    var v = validate();
+    var badge = $("valBadge");
+    if (!v.errors.length && !v.warnings.length) { badge.className = "valbadge ok"; badge.textContent = "✓ valid"; }
+    else if (!v.errors.length) { badge.className = "valbadge ok"; badge.textContent = "✓ " + v.warnings.length + " warning" + (v.warnings.length === 1 ? "" : "s"); }
+    else { badge.className = "valbadge err"; badge.textContent = v.errors.length + " error" + (v.errors.length === 1 ? "" : "s"); }
+    $("saveBtn").disabled = v.errors.length > 0;
+    paintValPanel();
+    // invalid markers in lists
+    var bad = {};
+    v.errors.concat(v.warnings).forEach(function (x) { if (x.where) bad[x.where] = (bad[x.where] || 0); });
+    v.errors.forEach(function (x) { if (x.where) bad[x.where] = 2; });
+    document.querySelectorAll("#listRecipesBody .row").forEach(function (r) {
+      r.classList.toggle("invalid", bad["ckt:" + r.dataset.id] === 2);
+    });
+    document.querySelectorAll("#listIngredientsBody .row").forEach(function (r) {
+      r.classList.toggle("invalid", bad["ing:" + r.dataset.id] === 2);
+    });
+  }
+  function paintValPanel() {
+    var v = S.issues, body = $("valPanelBody");
+    var n = v.errors.length + v.warnings.length;
+    $("valPanelTitle").textContent = n === 0 ? "No issues" :
+      (v.errors.length + " error" + (v.errors.length === 1 ? "" : "s") + " · " + v.warnings.length + " warning" + (v.warnings.length === 1 ? "" : "s"));
+    body.innerHTML = "";
+    v.errors.concat(v.warnings).forEach(function (x, idx) {
+      var isErr = idx < v.errors.length;
+      var d = el("div", "issue " + (isErr ? "e" : "w"));
+      d.innerHTML = '<span class="tag">' + (isErr ? "ERR" : "warn") + '</span><span>' + esc(x.where ? x.where + " — " : "") + esc(x.msg) + '</span>';
+      d.addEventListener("click", function () { jumpTo(x); });
+      body.appendChild(d);
+    });
+  }
+  function jumpTo(issue) {
+    if (!issue.where) return;
+    var p = issue.where.split(":");
+    if (p[0] === "ckt") { selectTab("recipes"); selectRecipe(p[1]); }
+    else if (p[0] === "ing") { selectTab("ingredients"); selectIngredient(p[1]); }
+  }
+
+  // ---------------------------------------------------------------- tabs ------
+  function selectTab(t) {
+    S.tab = t;
+    document.querySelectorAll("#tabs button").forEach(function (b) { b.setAttribute("aria-selected", b.dataset.tab === t ? "true" : "false"); });
+    $("wrapRecipes").hidden = t !== "recipes";
+    $("wrapIngredients").hidden = t !== "ingredients";
+    $("wrapJson").hidden = t !== "json";
+    if (t === "json") fillJson();
+  }
+
+  // ---------------------------------------------------------------- recipes ---
+  function renderRecipeList() {
+    var q = $("searchRecipes").value.toLowerCase().trim();
+    var body = $("listRecipesBody"); body.innerHTML = "";
+    $("cRecipes").textContent = S.C.cocktails.length;
+    S.C.cocktails.slice().sort(function (a, b) { return (a.name || "").localeCompare(b.name || ""); }).forEach(function (c) {
+      if (q && (c.name || "").toLowerCase().indexOf(q) < 0 && (c.id || "").indexOf(q) < 0 &&
+          !(c.base || []).some(function (b) { return b.indexOf(q) >= 0; })) return;
+      var r = el("div", "row"); r.dataset.id = c.id;
+      r.setAttribute("aria-current", c.id === S.selRecipe ? "true" : "false");
+      r.innerHTML = '<span>' + esc(c.name || "(unnamed)") + '</span><span class="sub">' + esc((c.base || []).join("/")) + '</span>';
+      r.addEventListener("click", function () { selectRecipe(c.id); });
+      body.appendChild(r);
+    });
+  }
+  function selectRecipe(id) {
+    S.selRecipe = id;
+    renderRecipeList();
+    var c = S.C.cocktails.filter(function (x) { return x.id === id; })[0];
+    if (!c) { $("paneRecipe").innerHTML = '<div class="placeholder">Not found.</div>'; return; }
+    renderRecipeForm(c);
+  }
+  function newRecipe() {
+    var c = { id: "", name: "", aka: [], variantOf: null, status: "active", base: [],
+      method: "stir", glass: "coupe", service: "up", ice: "none", garnish: "None",
+      tags: [], notes: "", source: {}, ingredients: [], steps: [] };
+    S.C.cocktails.push(c);
+    S.selRecipe = null;
+    renderRecipeList();
+    renderRecipeForm(c);
+    validateAndPaint();
+  }
+
+  function field(label, inputEl, hint) {
+    var f = el("div", "field");
+    var l = el("label", null, esc(label)); f.appendChild(l);
+    f.appendChild(inputEl);
+    if (hint) { var h = el("div", "hint", hint); f.appendChild(h); }
+    return f;
+  }
+  function selectEl(opts, val, onChange, allowEmpty) {
+    var s = el("select");
+    if (allowEmpty) s.appendChild(el("option", null, "—"));
+    opts.forEach(function (o) {
+      var op = el("option", null, esc(o)); op.value = o;
+      if (o === val) op.selected = true;
+      s.appendChild(op);
+    });
+    s.value = val == null ? "" : val;
+    s.addEventListener("change", function () { onChange(s.value); });
+    return s;
+  }
+  function textEl(val, onInput, type) {
+    var i = el("input"); i.type = type || "text"; i.value = val == null ? "" : val;
+    i.addEventListener("input", function () { onInput(i.value); });
+    return i;
+  }
+  function chipEditor(arr, onChange, listId, noInput) {
+    var box = el("div", "chips");
+    function paint() {
+      box.innerHTML = "";
+      arr.forEach(function (v, idx) {
+        var c = el("span", "chip");
+        c.innerHTML = '<span>' + esc(v) + '</span>';
+        var b = el("button", null, "×"); b.type = "button";
+        b.addEventListener("click", function () { arr.splice(idx, 1); paint(); onChange(); });
+        c.appendChild(b); box.appendChild(c);
+      });
+      if (noInput) { if (!arr.length) box.appendChild(el("span", "hint", "none")); return; }
+      var inp = el("input"); inp.placeholder = "add…";
+      if (listId) inp.setAttribute("list", listId);
+      inp.addEventListener("keydown", function (e) {
+        if (e.key === "Enter" || e.key === ",") {
+          e.preventDefault();
+          var v = inp.value.trim().replace(/,$/, "");
+          if (v && arr.indexOf(v) < 0) { arr.push(v); paint(); onChange(); }
+        } else if (e.key === "Backspace" && !inp.value && arr.length) {
+          arr.pop(); paint(); onChange();
+        }
+      });
+      box.appendChild(inp);
+    }
+    paint();
+    return box;
+  }
+
+  function renderRecipeForm(c) {
+    var p = $("paneRecipe"); p.innerHTML = "";
+    var jsonBtn = el("button", "btn ghost", "&lt;/&gt; JSON"); jsonBtn.type = "button";
+    var topBar = el("div", "subactions"); topBar.style.marginBottom = "10px";
+    var del = el("button", "btn ghost danger", "Delete recipe"); del.type = "button";
+    del.addEventListener("click", function () {
+      if (!confirm("Delete “" + (c.name || c.id) + "”?")) return;
+      S.C.cocktails = S.C.cocktails.filter(function (x) { return x !== c; });
+      S.selRecipe = null; renderRecipeList();
+      $("paneRecipe").innerHTML = '<div class="placeholder">Deleted.</div>';
+      validateAndPaint();
+    });
+    topBar.appendChild(jsonBtn); topBar.appendChild(del);
+    p.appendChild(topBar);
+
+    var jsonMode = { on: false };
+    var formWrap = el("div");
+    p.appendChild(formWrap);
+    jsonBtn.addEventListener("click", function () {
+      jsonMode.on = !jsonMode.on;
+      if (jsonMode.on) showJsonMini(); else build();
+    });
+    function showJsonMini() {
+      formWrap.innerHTML = "";
+      var wrap = el("div", "jsonwrap jsonmini");
+      var err = el("div", "err"); err.hidden = true;
+      var ta = el("textarea"); ta.spellcheck = false;
+      ta.value = JSON.stringify(serCocktail(c), null, 2);
+      ta.addEventListener("input", function () {
+        try {
+          var o = JSON.parse(ta.value);
+          err.hidden = true;
+          Object.keys(c).forEach(function (k) { delete c[k]; });
+          Object.assign(c, o);
+          S.selRecipe = c.id;
+          renderRecipeList(); rebuildDatalists(); validateAndPaint();
+        } catch (e) { err.hidden = false; err.textContent = e.message; }
+      });
+      wrap.appendChild(err); wrap.appendChild(ta); formWrap.appendChild(wrap);
+    }
+
+    function build() {
+      jsonMode.on = false;
+      formWrap.innerHTML = "";
+      var chg = function () { c.id = c.id || slug(c.name); S.selRecipe = c.id; renderRecipeList(); rebuildDatalists(); validateAndPaint(); };
+
+      formWrap.appendChild(field("Name", textEl(c.name, function (v) { c.name = v; if (!c._idLocked) c.id = slug(v); syncId(); chg(); })));
+      var idInput = textEl(c.id, function (v) { c.id = slug(v); c._idLocked = true; chg(); });
+      var idField = field("ID (slug)", idInput, "Used in deep links; keep stable once shared.");
+      function syncId() { idInput.value = c.id; }
+      formWrap.appendChild(idField);
+
+      var r2 = el("div", "row2");
+      r2.appendChild(field("Status", selectEl(["active", "wishlist"], c.status, function (v) { c.status = v; chg(); })));
+      var variants = S.C.cocktails.map(function (x) { return x.id; }).filter(function (x) { return x && x !== c.id; });
+      r2.appendChild(field("Variant of", selectEl(variants, c.variantOf, function (v) { c.variantOf = v || null; chg(); }, true)));
+      formWrap.appendChild(r2);
+
+      formWrap.appendChild(field("Also known as", chipEditor(c.aka, chg)));
+
+      // base
+      var baseChoices = S.I.ingredients.filter(function (g) { return BASE_CATS.indexOf(g.category) >= 0; }).map(function (g) { return g.id; });
+      var baseBox = el("div");
+      var baseChips = chipEditor(c.base, function () { chg(); renderPreview(); }, null, true);
+      var baseAdd = selectEl(baseChoices.filter(function (b) { return c.base.indexOf(b) < 0; }), "", function (v) {
+        if (v && c.base.indexOf(v) < 0) { c.base.push(v); renderRecipeForm(c); }
+      }, true);
+      baseBox.appendChild(baseChips); baseBox.appendChild(baseAdd);
+      formWrap.appendChild(field("Base spirit(s)", baseBox, "Drives the spirit filter. Ingredient ids of category spirit/amaro/fortified/liqueur/wine."));
+
+      var r3 = el("div", "row2");
+      r3.appendChild(field("Method", selectEl(METHODS, c.method, function (v) { c.method = v; chg(); renderPreview(); })));
+      r3.appendChild(field("Glass", selectEl(GLASSES, c.glass, function (v) { c.glass = v; chg(); renderPreview(); })));
+      formWrap.appendChild(r3);
+      var r3b = el("div", "row2");
+      r3b.appendChild(field("Service", selectEl(SERVICES, c.service, function (v) { c.service = v; chg(); renderPreview(); })));
+      r3b.appendChild(field("Ice", selectEl(ICES, c.ice, function (v) { c.ice = v; chg(); renderPreview(); })));
+      formWrap.appendChild(r3b);
+
+      formWrap.appendChild(field("Garnish", textEl(c.garnish, function (v) { c.garnish = v; chg(); renderPreview(); })));
+      formWrap.appendChild(field("Tags", chipEditor(c.tags, function () { chg(); renderPreview(); }, "dlTags")));
+      formWrap.appendChild(field("Notes", (function () { var t = el("textarea"); t.value = c.notes || ""; t.addEventListener("input", function () { c.notes = t.value; chg(); renderPreview(); }); return t; })()));
+
+      // source
+      c.source = c.source || {};
+      var sh = el("div", "sectionh", "Source"); formWrap.appendChild(sh);
+      var sr = el("div", "row2");
+      sr.appendChild(field("Book", textEl(c.source.book, function (v) { c.source.book = v; chg(); })));
+      sr.appendChild(field("Author", textEl(c.source.author, function (v) { c.source.author = v; chg(); })));
+      formWrap.appendChild(sr);
+      var sr2 = el("div", "row2");
+      sr2.appendChild(field("URL", textEl(c.source.url, function (v) { c.source.url = v; chg(); }, "url")));
+      sr2.appendChild(field("Page", textEl(c.source.page, function (v) { c.source.page = v; chg(); }, "number")));
+      formWrap.appendChild(sr2);
+      formWrap.appendChild(field("Source note", textEl(c.source.note, function (v) { c.source.note = v; chg(); })));
+
+      // ingredients
+      formWrap.appendChild(el("div", "sectionh", "Ingredients"));
+      var ingWrap = el("div"); formWrap.appendChild(ingWrap);
+      renderIngRows(c, ingWrap, function () { chg(); renderPreview(); });
+      var addIng = el("button", "btn", "+ Ingredient"); addIng.type = "button";
+      addIng.addEventListener("click", function () { c.ingredients.push({ ref: "", ml: 30 }); renderIngRows(c, ingWrap, function () { chg(); renderPreview(); }); chg(); });
+      formWrap.appendChild(addIng);
+
+      // steps
+      formWrap.appendChild(el("div", "sectionh", "Steps"));
+      var stepsTa = el("textarea"); stepsTa.style.minHeight = "90px";
+      stepsTa.value = (c.steps || []).join("\n");
+      stepsTa.addEventListener("input", function () { c.steps = stepsTa.value.split("\n").map(function (s) { return s.trim(); }).filter(Boolean); chg(); renderPreview(); });
+      formWrap.appendChild(field("One step per line", stepsTa));
+      var genBtn = el("button", "btn", "Generate from method / glass / garnish"); genBtn.type = "button";
+      genBtn.addEventListener("click", function () { c.steps = synthSteps(c); stepsTa.value = c.steps.join("\n"); chg(); renderPreview(); });
+      formWrap.appendChild(genBtn);
+
+      // preview
+      formWrap.appendChild(el("div", "sectionh", "Preview"));
+      var pv = el("div"); pv.id = "recipePreview"; formWrap.appendChild(pv);
+      renderPreview();
+
+      function renderPreview() { pv.innerHTML = previewHTML(c); }
+      applyFieldErrors(p, "ckt:" + c.id);
+    }
+    build();
+  }
+
+  function renderIngRows(c, wrap, chg) {
+    wrap.innerHTML = "";
+    c.ingredients.forEach(function (ig, idx) {
+      var row = el("div", "ingrow");
+      // ingredient name box
+      var nameBox = el("div");
+      var nm = el("input"); nm.type = "text"; nm.setAttribute("list", "dlIngredients");
+      var g0 = S.I.ingredients.filter(function (x) { return x.id === ig.ref; })[0];
+      nm.value = g0 ? g0.name : ig.ref;
+      var resolved = el("div", "resolved");
+      function resolve() {
+        var v = nm.value.trim(), match = S.I.ingredients.filter(function (x) {
+          return x.name.toLowerCase() === v.toLowerCase() || x.id === v || (x.aliases || []).some(function (a) { return a.toLowerCase() === v.toLowerCase(); });
+        })[0];
+        if (match) { ig.ref = match.id; resolved.className = "resolved"; resolved.textContent = "→ " + match.id; }
+        else {
+          ig.ref = slug(v);
+          resolved.className = "resolved new";
+          resolved.innerHTML = 'not in vocab — <a href="#" data-mk>＋ create “' + esc(v) + '”</a>';
+          var mk = resolved.querySelector("[data-mk]");
+          if (mk) mk.addEventListener("click", function (e) { e.preventDefault(); quickAddIngredient(v, function (id) { ig.ref = id; nm.value = v; resolve(); chg(); }); });
+        }
+        chg();
+      }
+      nm.addEventListener("input", resolve);
+      if (g0) resolved.textContent = "→ " + g0.id;
+      else if (ig.ref) { resolved.className = "resolved new"; resolved.textContent = "“" + ig.ref + "” not in vocabulary"; }
+      nameBox.appendChild(nm); nameBox.appendChild(resolved);
+      row.appendChild(nameBox);
+
+      // amount
+      var amt = el("div", "amt");
+      var kind = kindOf(ig);
+      var ksel = el("select");
+      KINDS.forEach(function (K) { var o = el("option", null, K.label); o.value = K.k; if (K.k === kind) o.selected = true; ksel.appendChild(o); });
+      var num = el("input"); num.type = "number"; num.step = "0.25"; num.min = "0";
+      var K0 = KINDS.filter(function (K) { return K.k === kind; })[0];
+      num.value = kindNum(ig, K0);
+      num.style.display = K0 && K0.num ? "" : "none";
+      function applyKind() {
+        var K = KINDS.filter(function (x) { return x.k === ksel.value; })[0];
+        num.style.display = K.num ? "" : "none";
+        setEntryFromKind(ig, K, parseFloat(num.value) || 0);
+        chg();
+      }
+      ksel.addEventListener("change", applyKind);
+      num.addEventListener("input", applyKind);
+      amt.appendChild(ksel); amt.appendChild(num);
+      var apx = el("label"); apx.style.fontSize = ".72rem"; apx.style.whiteSpace = "nowrap";
+      apx.innerHTML = '<input type="checkbox"' + (ig.approx === "max" ? " checked" : "") + '> ≤';
+      apx.querySelector("input").addEventListener("change", function (e) { if (e.target.checked) ig.approx = "max"; else delete ig.approx; chg(); });
+      amt.appendChild(apx);
+      row.appendChild(amt);
+
+      // brand + note
+      var sec = el("div", "sec");
+      var br = el("input"); br.type = "text"; br.placeholder = "brand (optional)"; br.value = ig.brand || "";
+      br.addEventListener("input", function () { if (br.value.trim()) ig.brand = br.value.trim(); else delete ig.brand; chg(); });
+      var no = el("input"); no.type = "text"; no.placeholder = "note (optional)"; no.value = ig.note || "";
+      no.addEventListener("input", function () { if (no.value.trim()) ig.note = no.value.trim(); else delete ig.note; chg(); });
+      sec.appendChild(br); sec.appendChild(no);
+      row.appendChild(sec);
+
+      // controls
+      var ctl = el("div", "ctl");
+      var up = el("button", null, "↑"), dn = el("button", null, "↓"), rm = el("button", null, "✕");
+      up.type = dn.type = rm.type = "button";
+      up.addEventListener("click", function () { if (idx > 0) { c.ingredients.splice(idx - 1, 0, c.ingredients.splice(idx, 1)[0]); renderIngRows(c, wrap, chg); chg(); } });
+      dn.addEventListener("click", function () { if (idx < c.ingredients.length - 1) { c.ingredients.splice(idx + 1, 0, c.ingredients.splice(idx, 1)[0]); renderIngRows(c, wrap, chg); chg(); } });
+      rm.addEventListener("click", function () { c.ingredients.splice(idx, 1); renderIngRows(c, wrap, chg); chg(); });
+      ctl.appendChild(up); ctl.appendChild(dn); ctl.appendChild(rm);
+      row.appendChild(ctl);
+
+      wrap.appendChild(row);
+    });
+  }
+
+  function kindOf(ig) {
+    if (ig.unit === "tsp" || ig.unit === "barspoon") return ig.unit;
+    if (ig.unit === "dash" || ig.unit === "drops" || ig.unit === "piece") return ig.unit;
+    if (ig.unit === "rinse" || ig.unit === "top" || ig.unit === "leaves" || ig.unit === "sprig") return ig.unit;
+    return "ml";
+  }
+  function kindNum(ig, K) {
+    if (!K || !K.num) return "";
+    if (K.num === "ml") return ig.ml == null ? "" : ig.ml;
+    if (K.num === "count") return ig.ml == null ? "" : trimNum(ig.ml / (K.per || 5));
+    if (K.num === "amount") return ig.amount == null ? "" : ig.amount;
+    return "";
+  }
+  function setEntryFromKind(ig, K, n) {
+    delete ig.ml; delete ig.amount; delete ig.unit;
+    if (K.k === "ml") { ig.ml = n; return; }
+    if (K.num === "count") { ig.ml = n * (K.per || 5); ig.unit = K.unit; return; }
+    if (K.num === "amount") { ig.amount = n; ig.unit = K.unit; return; }
+    ig.unit = K.unit; // rinse/top/leaves/sprig
+  }
+
+  function quickAddIngredient(name, cb) {
+    var id = slug(name);
+    if (S.I.ingredients.some(function (x) { return x.id === id; })) { cb(id); return; }
+    var cat = prompt("New ingredient “" + name + "”.\nCategory? (" + CATEGORIES.join(", ") + ")", "liqueur");
+    if (!cat) return;
+    cat = cat.trim().toLowerCase();
+    if (CATEGORIES.indexOf(cat) < 0) { toast("“" + cat + "” isn’t a valid category."); return; }
+    var fam = null;
+    if (cat === "spirit") { fam = (prompt("Family? (" + FAMILIES.join(", ") + ")", "other") || "other").trim().toLowerCase(); }
+    S.I.ingredients.push({ id: id, name: name, category: cat, family: fam, aliases: [], brands: [] });
+    S.I.ingredients.sort(function (a, b) { return a.category === b.category ? a.name.localeCompare(b.name) : CATEGORIES.indexOf(a.category) - CATEGORIES.indexOf(b.category); });
+    rebuildDatalists(); renderIngredientList(); validateAndPaint();
+    toast("Added ingredient “" + name + "”.");
+    cb(id);
+  }
+
+  // ---------------------------------------------------------------- ingredients
+  function renderIngredientList() {
+    var q = $("searchIngredients").value.toLowerCase().trim();
+    var body = $("listIngredientsBody"); body.innerHTML = "";
+    $("cIngredients").textContent = S.I.ingredients.length;
+    var byCat = {};
+    S.I.ingredients.forEach(function (g) { (byCat[g.category] = byCat[g.category] || []).push(g); });
+    CATEGORIES.forEach(function (cat) {
+      var list = (byCat[cat] || []).filter(function (g) {
+        return !q || g.name.toLowerCase().indexOf(q) >= 0 || g.id.indexOf(q) >= 0 || (g.aliases || []).join(" ").toLowerCase().indexOf(q) >= 0;
+      });
+      if (!list.length) return;
+      body.appendChild(el("div", "grouplabel", esc(cat)));
+      list.sort(function (a, b) { return a.name.localeCompare(b.name); }).forEach(function (g) {
+        var r = el("div", "row"); r.dataset.id = g.id;
+        r.setAttribute("aria-current", g.id === S.selIng ? "true" : "false");
+        r.innerHTML = '<span>' + esc(g.name) + '</span><span class="sub">' + esc(g.id) + '</span>';
+        r.addEventListener("click", function () { selectIngredient(g.id); });
+        body.appendChild(r);
+      });
+    });
+  }
+  function selectIngredient(id) {
+    S.selIng = id; renderIngredientList();
+    var g = S.I.ingredients.filter(function (x) { return x.id === id; })[0];
+    if (!g) { $("paneIngredient").innerHTML = '<div class="placeholder">Not found.</div>'; return; }
+    renderIngredientForm(g);
+  }
+  function newIngredient() {
+    var g = { id: "", name: "", category: "liqueur", family: null, aliases: [], brands: [] };
+    S.I.ingredients.push(g); S.selIng = null;
+    renderIngredientList(); renderIngredientForm(g); validateAndPaint();
+  }
+  function refCount(id) {
+    var n = 0;
+    S.C.cocktails.forEach(function (c) {
+      if ((c.base || []).indexOf(id) >= 0) n++;
+      (c.ingredients || []).forEach(function (i) { if (i.ref === id) n++; });
+    });
+    return n;
+  }
+  function renameRef(oldId, newId) {
+    S.C.cocktails.forEach(function (c) {
+      c.base = (c.base || []).map(function (b) { return b === oldId ? newId : b; });
+      (c.ingredients || []).forEach(function (i) { if (i.ref === oldId) i.ref = newId; });
+    });
+  }
+  function renderIngredientForm(g) {
+    var p = $("paneIngredient"); p.innerHTML = "";
+    var rc = g.id ? refCount(g.id) : 0;
+    var top = el("div", "subactions"); top.style.marginBottom = "10px";
+    var jb = el("button", "btn ghost", "&lt;/&gt; JSON"); jb.type = "button";
+    var del = el("button", "btn ghost danger", "Delete"); del.type = "button";
+    del.addEventListener("click", function () {
+      var n = refCount(g.id);
+      if (n) { toast("Can’t delete — " + n + " reference" + (n === 1 ? "" : "s") + " in recipes. Remove those first."); return; }
+      if (!confirm("Delete ingredient “" + (g.name || g.id) + "”?")) return;
+      S.I.ingredients = S.I.ingredients.filter(function (x) { return x !== g; });
+      S.selIng = null; renderIngredientList(); rebuildDatalists();
+      $("paneIngredient").innerHTML = '<div class="placeholder">Deleted.</div>'; validateAndPaint();
+    });
+    top.appendChild(jb); top.appendChild(del); p.appendChild(top);
+
+    var form = el("div"); p.appendChild(form);
+    var jsonOn = false;
+    jb.addEventListener("click", function () { jsonOn = !jsonOn; if (jsonOn) mini(); else build(); });
+    function mini() {
+      form.innerHTML = "";
+      var wrap = el("div", "jsonwrap jsonmini");
+      var err = el("div", "err"); err.hidden = true;
+      var ta = el("textarea"); ta.spellcheck = false; ta.value = JSON.stringify(serIngredient(g), null, 2);
+      ta.addEventListener("input", function () {
+        try { var o = JSON.parse(ta.value); err.hidden = true; Object.keys(g).forEach(function (k) { delete g[k]; }); Object.assign(g, o); S.selIng = g.id; renderIngredientList(); rebuildDatalists(); validateAndPaint(); }
+        catch (e) { err.hidden = false; err.textContent = e.message; }
+      });
+      wrap.appendChild(err); wrap.appendChild(ta); form.appendChild(wrap);
+    }
+    function build() {
+      jsonOn = false; form.innerHTML = "";
+      var chg = function () { S.selIng = g.id; renderIngredientList(); rebuildDatalists(); validateAndPaint(); };
+      form.appendChild(field("Name", textEl(g.name, function (v) { g.name = v; if (!g._idLocked) { g.id = slug(v); idI.value = g.id; } chg(); })));
+      var idI = textEl(g.id, function (v) {
+        var nv = slug(v);
+        if (g.id && rc && nv !== g.id) {
+          if (confirm(rc + " recipe" + (rc === 1 ? "" : "s") + " reference “" + g.id + "”. Rename everywhere to “" + nv + "”?")) renameRef(g.id, nv);
+        }
+        g.id = nv; g._idLocked = true; chg();
+      });
+      form.appendChild(field("ID (slug)", idI, rc ? (rc + " recipe" + (rc === 1 ? "" : "s") + " use this — favorites & bar are keyed to it") : "Permanent once shared."));
+      var r2 = el("div", "row2");
+      var famSel = selectEl(FAMILIES, g.family, function (v) { g.family = v || null; chg(); }, true);
+      r2.appendChild(field("Category", selectEl(CATEGORIES, g.category, function (v) {
+        g.category = v; if (v !== "spirit") { g.family = null; famSel.value = ""; } chg();
+      })));
+      r2.appendChild(field("Family (spirits only)", famSel));
+      form.appendChild(r2);
+      form.appendChild(field("Aliases", chipEditor(g.aliases, chg), "Extra search terms; must be globally unique."));
+      form.appendChild(field("Brands", chipEditor(g.brands, chg), "Suggested bottles; the first shows as “e.g. …”."));
+      var pl = el("label"); pl.style.fontSize = ".85rem";
+      pl.innerHTML = '<input type="checkbox"' + (g.pantry ? " checked" : "") + '> Pantry staple (assumed on-hand: bitters, water, soda)';
+      pl.querySelector("input").addEventListener("change", function (e) { if (e.target.checked) g.pantry = true; else delete g.pantry; chg(); });
+      form.appendChild(field("Pantry", pl));
+      form.appendChild(field("Notes", textEl(g.notes, function (v) { if (v) g.notes = v; else delete g.notes; chg(); })));
+      applyFieldErrors(p, "ing:" + g.id);
+    }
+    build();
+  }
+
+  // ---------------------------------------------------------------- preview ---
+  var FR = [[0, ""], [.125, "⅛"], [.25, "¼"], [.333, "⅓"], [.375, "⅜"], [.5, "½"], [.625, "⅝"], [.667, "⅔"], [.75, "¾"], [.875, "⅞"], [1, ""]];
+  function ozText(ml) {
+    var oz = ml / S.mlPerOz, whole = Math.floor(oz + 1e-6), frac = oz - whole, best = FR[0], bd = 9;
+    FR.forEach(function (f) { var d = Math.abs(f[0] - frac); if (d < bd) { bd = d; best = f; } });
+    if (best[0] === 1) { whole += 1; best = FR[0]; }
+    return ((whole || (best[1] ? "" : "0")) + (best[1] || (whole ? "" : ""))) + " oz";
+  }
+  function amtText(i) {
+    var pre = i.approx === "max" ? "≤ " : "";
+    if (i.unit === "tsp" || i.unit === "barspoon") return pre + trimNum((i.ml || 0) / 5) + (i.unit === "tsp" ? " tsp" : " bar spoon");
+    if (i.ml != null) return pre + trimNum(i.ml) + " ml · " + ozText(i.ml);
+    if (i.amount != null) return pre + i.amount + " " + (i.unit === "dash" && +i.amount !== 1 ? "dashes" : i.unit || "");
+    if (i.unit === "rinse") return "rinse";
+    if (i.unit === "top") return "to top";
+    return i.unit || "—";
+  }
+  function synthSteps(c) {
+    var G = { "old-fashioned": "a rocks glass", "coupe": "a chilled coupe", "nick-and-nora": "a Nick & Nora glass", "flute": "a flute", "collins": "a Collins glass", "rocks": "a rocks glass", "highball": "a highball", "wine": "a wine glass" };
+    var ICE = { "large-cube": "one large cube", "cubed": "fresh ice", "crushed": "crushed ice", "none": "ice" };
+    var g = G[c.glass] || "the glass", steps = [];
+    steps.push({ shake: "Shake with ice.", "dry-shake": "Dry-shake without ice, then shake again with ice.", stir: "Stir with ice until well chilled.", build: "Build in " + g + " over " + (ICE[c.ice] || "ice") + ".", swizzle: "Add to " + g + " with crushed ice and swizzle.", blend: "Blend with crushed ice." }[c.method] || "Stir with ice.");
+    if (c.method !== "build" && c.method !== "swizzle") {
+      if (c.service === "rocks" || c.service === "long") steps.push("Strain into " + g + " over " + (ICE[c.ice] || "fresh ice") + ".");
+      else steps.push("Strain into " + g + ".");
+    }
+    if (c.garnish && c.garnish.toLowerCase() !== "none") {
+      steps.push(/^(express|absinthe|serve|twist)/i.test(c.garnish) ? c.garnish.replace(/\.?$/, ".") : "Garnish with " + c.garnish[0].toLowerCase() + c.garnish.slice(1) + ".");
+    }
+    return steps;
+  }
+  function previewHTML(c) {
+    var byId = {}; S.I.ingredients.forEach(function (g) { byId[g.id] = g; });
+    var lis = (c.ingredients || []).map(function (i) {
+      var g = byId[i.ref], miss = !g;
+      return '<li class="' + (miss ? "miss" : "") + '"><span class="a">' + esc(amtText(i)) + '</span><span class="n">' + esc(g ? g.name : i.ref + " ⚠") + (i.note ? ' <em>(' + esc(i.note) + ')</em>' : "") + '</span></li>';
+    }).join("");
+    var src = c.source || {}, sb = [];
+    if (src.book) sb.push("<em>" + esc(src.book) + "</em>" + (src.author ? ", " + esc(src.author) : ""));
+    else if (src.author) sb.push(esc(src.author));
+    if (src.note) sb.push(esc(src.note));
+    if (src.url) sb.push('<a href="' + esc(src.url) + '" target="_blank" rel="noopener">link ↗</a>');
+    return '<div class="preview">' +
+      '<div class="pv-base">' + esc((c.base || []).map(function (b) { return byId[b] ? byId[b].name : b; }).join(" / ") || "—") + '</div>' +
+      '<h3>' + esc(c.name || "(unnamed)") + '</h3>' +
+      '<div class="pv-meta">' + esc(c.method) + " · " + esc((c.glass || "").replace(/-/g, " ")) + " · " + esc(c.service || "") +
+        (c.garnish && c.garnish.toLowerCase() !== "none" ? " · " + esc(c.garnish) : "") + " · " + esc((c.tags || []).join(", ")) + '</div>' +
+      '<ul>' + lis + '</ul>' +
+      (c.steps && c.steps.length ? '<ol>' + c.steps.map(function (s) { return "<li>" + esc(s) + "</li>"; }).join("") + '</ol>' : "") +
+      (c.notes ? '<div class="pv-note">' + esc(c.notes) + '</div>' : "") +
+      (sb.length ? '<div class="pv-note">' + sb.join(" · ") + '</div>' : "") +
+    '</div>';
+  }
+
+  function applyFieldErrors(pane, where) {
+    var mine = S.issues.errors.filter(function (x) { return x.where === where && x.field; });
+    pane.querySelectorAll(".field.bad").forEach(function (f) { f.classList.remove("bad"); });
+    // best-effort: match by label text to field key
+    mine.forEach(function (x) {
+      pane.querySelectorAll(".field").forEach(function (f) {
+        var lab = (f.querySelector("label") || {}).textContent || "";
+        if (lab.toLowerCase().indexOf(x.field.toLowerCase()) === 0) {
+          f.classList.add("bad");
+          if (!f.querySelector(".err")) { var e = el("div", "err", esc(x.msg)); f.appendChild(e); }
+        }
+      });
+    });
+  }
+
+  // ---------------------------------------------------------------- json tab --
+  function fillJson() {
+    $("jsonC").value = textC();
+    $("jsonI").value = textI();
+    $("jsonErrC").hidden = true; $("jsonErrI").hidden = true;
+  }
+  function wireJsonTab() {
+    function mk(taId, errId, kind) {
+      var ta = $(taId), err = $(errId);
+      ta.addEventListener("input", debounce(function () {
+        try {
+          var o = JSON.parse(ta.value);
+          if (kind === "C" && !Array.isArray(o.cocktails)) throw new Error("missing cocktails[]");
+          if (kind === "I" && !Array.isArray(o.ingredients)) throw new Error("missing ingredients[]");
+          err.hidden = true;
+          if (kind === "C") S.C = o; else S.I = o;
+          rebuildDatalists(); renderRecipeList(); renderIngredientList(); validateAndPaint();
+        } catch (e) { err.hidden = false; err.textContent = e.message; }
+      }, 350));
+    }
+    mk("jsonC", "jsonErrC", "C");
+    mk("jsonI", "jsonErrI", "I");
+  }
+
+  // ---------------------------------------------------------------- save ------
+  function download(name, text) {
+    var b = new Blob([text], { type: "application/json" });
+    var u = URL.createObjectURL(b), a = el("a");
+    a.href = u; a.download = name; document.body.appendChild(a); a.click();
+    setTimeout(function () { URL.revokeObjectURL(u); a.remove(); }, 200);
+  }
+  function save() {
+    var v = validate();
+    if (v.errors.length && !confirm(v.errors.length + " error(s) remain. Download anyway?")) return;
+    download("cocktails.json", textC());
+    setTimeout(function () { download("ingredients.json", textI()); }, 350);
+    S.snapshot = snapshotStr();
+    validateAndPaint();
+    toast("Downloaded. Move both into postdiluvian-private, then run  bin/save");
+  }
+
+  // ---------------------------------------------------------------- misc ------
+  function rebuildDatalists() {
+    var dl = $("dlIngredients"); dl.innerHTML = "";
+    S.I.ingredients.forEach(function (g) { var o = el("option"); o.value = g.name; dl.appendChild(o); });
+    var tags = {}; S.C.cocktails.forEach(function (c) { (c.tags || []).forEach(function (t) { tags[t] = 1; }); });
+    var dt = $("dlTags"); dt.innerHTML = "";
+    Object.keys(tags).sort().forEach(function (t) { var o = el("option"); o.value = t; dt.appendChild(o); });
+  }
+  function debounce(fn, ms) { var h; return function () { clearTimeout(h); var a = arguments, t = this; h = setTimeout(function () { fn.apply(t, a); }, ms); }; }
+  var toastH;
+  function toast(msg) {
+    var old = document.querySelector(".toast"); if (old) old.remove();
+    var t = el("div", "toast", esc(msg)); document.body.appendChild(t);
+    clearTimeout(toastH); toastH = setTimeout(function () { t.remove(); }, 4200);
+  }
+
+  // ---------------------------------------------------------------- wire ------
+  $("loadBtn").addEventListener("click", function () { $("fileInput").click(); });
+  $("loadBtn2").addEventListener("click", function () { $("fileInput").click(); });
+  $("fileInput").addEventListener("change", function () { ingestFiles(this.files); this.value = ""; });
+  var dz = $("dropzone");
+  ["dragover", "dragenter"].forEach(function (ev) { window.addEventListener(ev, function (e) { e.preventDefault(); dz.classList.add("hot"); }); });
+  ["dragleave", "drop"].forEach(function (ev) { window.addEventListener(ev, function (e) { e.preventDefault(); if (ev === "dragleave" && e.relatedTarget) return; dz.classList.remove("hot"); }); });
+  window.addEventListener("drop", function (e) { e.preventDefault(); if (e.dataTransfer && e.dataTransfer.files.length) ingestFiles(e.dataTransfer.files); });
+
+  $("saveBtn").addEventListener("click", save);
+  document.querySelectorAll("#tabs button").forEach(function (b) { b.addEventListener("click", function () { selectTab(b.dataset.tab); }); });
+  $("searchRecipes").addEventListener("input", renderRecipeList);
+  $("searchIngredients").addEventListener("input", renderIngredientList);
+  $("newRecipe").addEventListener("click", newRecipe);
+  $("newIngredient").addEventListener("click", newIngredient);
+  $("valPanelHead").addEventListener("click", function () {
+    var p = $("valPanel"); p.classList.toggle("open");
+    $("valPanelChevron").textContent = p.classList.contains("open") ? "▼" : "▲";
+  });
+  wireJsonTab();
+})();
+</script>
+</body>
+</html>

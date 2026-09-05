@@ -17,6 +17,8 @@ Two repos, side by side:
 ```
 postdiluvian/                 (this repo — public)
   index.html                  the app. Vanilla JS; fetches data/collection.json.
+  editor.html                 browser editor for the private masters (see below)
+  style.css                   design tokens shared by index.html + editor.html
   data/collection.json         COMMITTED, generated. The six public basics,
                                self-contained ({ meta, ingredients, cocktails }).
   tools/publish.py             private masters -> data/collection.json + the full file
@@ -63,6 +65,22 @@ Manual equivalent:
 python3 tools/publish.py
 python3 tools/validate.py ../postdiluvian-private/collection.full.json
 ```
+
+## Editing in the browser — `editor.html`
+
+An alternative to hand-editing the JSON. Open
+[`editor.html`](https://nasmith.github.io/postdiluvian/editor.html), load
+`cocktails.json` and `ingredients.json` from `postdiluvian-private/` (pick both,
+or drag them on). Everything is in-browser; nothing uploads.
+
+- guided forms for every field — dropdowns for method/glass/etc, ingredient
+  autocomplete, per-row amount modes (ml / tsp / dashes / rinse …), auto-slug ids,
+  a live recipe preview, and a `</> JSON` toggle on any entry
+- full add / edit / delete on both files; a `JSON` tab for editing either file raw
+- real-time validation (the same checks as `tools/validate.py`) — issues list at
+  the bottom, inline field markers, **Save** disabled while errors remain
+- **Save both** downloads the two files (formatted exactly like the originals).
+  Move them into `postdiluvian-private/`, then run `bin/save`.
 
 ## Collection file format
 
