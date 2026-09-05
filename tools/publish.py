@@ -85,11 +85,18 @@ def main():
         print("publish: no private masters at %s — data/collection.json left as committed" % PRIVATE)
         return 0
 
-    cocktails = json.loads(COCKTAILS.read_text(encoding="utf-8"))["cocktails"]
+    master = json.loads(COCKTAILS.read_text(encoding="utf-8"))
+    cocktails = master["cocktails"]
     ingredients = json.loads(INGREDIENTS.read_text(encoding="utf-8"))["ingredients"]
 
+    # Collection names are set in cocktails.json's meta block, so they survive a
+    # regenerate. Edit meta.name / meta.publicName there, not in the output files.
+    mmeta = master.get("meta", {})
+    full_name = mmeta.get("name", "Postdiluvian — full collection")
+    public_name = mmeta.get("publicName", "Postdiluvian — basics")
+
     full = {"_out": FULL_OUT, "ingredients": ingredients, "cocktails": cocktails}
-    fv, fchg = stamp(full, "Postdiluvian — full collection")
+    fv, fchg = stamp(full, full_name)
     write(full)
 
     picked = [c for c in cocktails if c["id"] in set(BASICS)]
@@ -106,8 +113,8 @@ def main():
         "ingredients": [i for i in ingredients if i["id"] in used],
         "cocktails": sorted(picked, key=lambda c: c["name"].lower()),
     }
-    pv, pchg = stamp(pub, "Postdiluvian — basics",
-                     {"note": "A public sample of six classics. The full collection is shared privately."})
+    pv, pchg = stamp(pub, public_name,
+                     {"note": "A public sample. The full collection is shared privately."})
     write(pub)
 
     print("publish: full v%s (%d recipes)%s   public v%s (%d recipes)%s" % (
