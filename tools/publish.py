@@ -33,7 +33,8 @@ FULL_OUT = PRIVATE / "collection.full.json"
 PUBLIC_OUT = ROOT / "data" / "collection.json"
 
 KIND = "postdiluvian-collection"
-BASICS = ["martini", "negroni", "manhattan", "whiskey-sour", "daiquiri", "sidecar"]
+BASICS = ["martini", "negroni", "manhattan", "whiskey-sour", "daiquiri", "sidecar",
+          "paper-plane", "brown-derby"]
 
 
 def content_hash(coll):

@@ -2,8 +2,8 @@
   "meta": {
     "kind": "postdiluvian-collection",
     "name": "Postdiluvian — basics",
-    "version": "2026.09.05",
-    "contentHash": "4c126330bbfe",
+    "version": "2026.09.05.2",
+    "contentHash": "f677580293d1",
     "note": "A public sample of six classics. The full collection is shared privately."
   },
   "ingredients": [
@@ -145,6 +145,17 @@
       ]
     },
     {
+      "id": "aperol",
+      "name": "Aperol",
+      "category": "amaro",
+      "family": null,
+      "aliases": [],
+      "brands": [
+        "Aperol"
+      ],
+      "notes": "Select Aperitivo is a common substitute."
+    },
+    {
       "id": "orange-curacao",
       "name": "Orange curaçao",
       "category": "liqueur",
@@ -157,6 +168,20 @@
       "brands": [
         "Pierre Ferrand Dry Curaçao",
         "Grand Marnier"
+      ]
+    },
+    {
+      "id": "nonino",
+      "name": "Amaro Nonino Quintessentia",
+      "category": "amaro",
+      "family": null,
+      "aliases": [
+        "nonino",
+        "nonino quintessentia amaro",
+        "nonino quintessentia"
+      ],
+      "brands": [
+        "Nonino"
       ]
     },
     {
@@ -209,6 +234,17 @@
       "brands": []
     },
     {
+      "id": "grapefruit-juice",
+      "name": "Grapefruit juice",
+      "category": "juice",
+      "family": null,
+      "aliases": [
+        "grapefruit",
+        "pink grapefruit juice"
+      ],
+      "brands": []
+    },
+    {
       "id": "simple-syrup",
       "name": "Simple syrup",
       "category": "syrup",
@@ -220,9 +256,69 @@
       ],
       "brands": [],
       "notes": "1:1 sugar:water."
+    },
+    {
+      "id": "honey-syrup",
+      "name": "Honey syrup",
+      "category": "syrup",
+      "family": null,
+      "aliases": [
+        "honey"
+      ],
+      "brands": [],
+      "notes": "3:1 honey:water."
     }
   ],
   "cocktails": [
+    {
+      "id": "brown-derby",
+      "name": "Brown Derby",
+      "aka": [],
+      "variantOf": null,
+      "status": "active",
+      "base": [
+        "bourbon"
+      ],
+      "method": "shake",
+      "glass": "coupe",
+      "service": "up",
+      "ice": "none",
+      "garnish": "None",
+      "tags": [
+        "citrus",
+        "shaken",
+        "sour"
+      ],
+      "notes": "",
+      "source": {
+        "book": "Cocktail Codex",
+        "author": "Alex Day, Nick Fauchald, David Kaplan, Devon Tarby"
+      },
+      "ingredients": [
+        {
+          "ref": "bourbon",
+          "ml": 60,
+          "brand": "Elijah Craig"
+        },
+        {
+          "ref": "grapefruit-juice",
+          "ml": 30
+        },
+        {
+          "ref": "lemon-juice",
+          "ml": 5,
+          "unit": "tsp"
+        },
+        {
+          "ref": "honey-syrup",
+          "ml": 15
+        }
+      ],
+      "steps": [
+        "Shake with ice.",
+        "Strain into a chilled coupe."
+      ]
+    },
     {
       "id": "daiquiri",
       "name": "Daiquiri",
@@ -410,6 +506,52 @@
         "Stir with ice until well chilled.",
         "Strain into a rocks glass over one large cube.",
         "Garnish with orange twist or wheel."
+      ]
+    },
+    {
+      "id": "paper-plane",
+      "name": "Paper Plane",
+      "aka": [],
+      "variantOf": null,
+      "status": "active",
+      "base": [
+        "bourbon"
+      ],
+      "method": "shake",
+      "glass": "coupe",
+      "service": "up",
+      "ice": "none",
+      "garnish": "None",
+      "tags": [
+        "bitter",
+        "citrus",
+        "shaken"
+      ],
+      "notes": "",
+      "source": {
+        "url": "https://www.liquor.com/recipes/the-paper-plane/"
+      },
+      "ingredients": [
+        {
+          "ref": "bourbon",
+          "ml": 22.5
+        },
+        {
+          "ref": "nonino",
+          "ml": 22.5
+        },
+        {
+          "ref": "aperol",
+          "ml": 22.5
+        },
+        {
+          "ref": "lemon-juice",
+          "ml": 22.5
+        }
+      ],
+      "steps": [
+        "Shake with ice.",
+        "Strain into a chilled coupe."
       ]
     },
     {
