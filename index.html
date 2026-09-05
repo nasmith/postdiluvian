@@ -447,7 +447,7 @@
   function baseMatches(c) {
     if (!state.base.size) return true;
     return c.base.some(function (b) {
-      return state.base.has(b) || state.base.has(famOf[b]);
+      return state.base.has(b) || state.base.has(famOf[b] || "other");
     });
   }
   function textMatches(c) {
