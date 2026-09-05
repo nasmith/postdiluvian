@@ -3,10 +3,11 @@
 A small, self-contained browser for a cocktail collection. One HTML file, one JSON
 file, no build step, no framework. Runs as a static site on GitHub Pages.
 
-**Live:** https://nasmith.github.io/postdiluvian/ *(after Pages is enabled)*
+**Live:** https://nasmith.github.io/postdiluvian/
 
-The public site ships **six classics** (Martini, Negroni, Manhattan, Whiskey Sour,
-Daiquiri, Sidecar). The full collection is kept privately and shared as a file —
+The public site ships **eight classics** (Martini, Negroni, Manhattan, Whiskey
+Sour, Daiquiri, Sidecar, Paper Plane, Brown Derby). The full collection is kept
+privately and shared as a file —
 open the site and use **“Load a collection file…”** (or drag the file onto the page).
 A loaded collection is remembered in that browser until you hit “Reset to public.”
 
@@ -19,7 +20,7 @@ postdiluvian/                 (this repo — public)
   index.html                  the app. Vanilla JS; fetches data/collection.json.
   editor.html                 browser editor for the private masters (see below)
   style.css                   design tokens shared by index.html + editor.html
-  data/collection.json         COMMITTED, generated. The six public basics,
+  data/collection.json         COMMITTED, generated. The eight public basics,
                                self-contained ({ meta, ingredients, cocktails }).
   tools/publish.py             private masters -> data/collection.json + the full file
   tools/validate.py            integrity check for a collection file. Runs in CI.
@@ -162,5 +163,6 @@ scaled for batches), **or** `amount` + `unit` for counts (`dash`, `drops`, `tsp`
 
 ## Deploying
 
-Settings → Pages → Source: **GitHub Actions**. `.github/workflows/pages.yml`
-publishes the repo root on every push to `main`.
+Pages is set to **GitHub Actions** (Settings → Pages → Source).
+`.github/workflows/pages.yml` publishes the repo root on every push to `main`,
+so `bin/save` (or any `git push`) redeploys the live site.
