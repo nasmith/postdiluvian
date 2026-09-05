@@ -82,6 +82,22 @@ or drag them on). Everything is in-browser; nothing uploads.
 - **Save both** downloads the two files (formatted exactly like the originals).
   Move them into `postdiluvian-private/`, then run `bin/save`.
 
+### Import a recipe with an AI assistant
+
+**Recipes ▸ Import…** builds a filled-in extraction prompt (the schema, the
+amount rules, and your current ingredient vocabulary) from a URL *or* pasted
+recipe text. You run that prompt wherever you already have an assistant —
+[claude.ai](https://claude.ai), ChatGPT, etc. — and paste its JSON reply back.
+The editor turns it into a new recipe, adds any new ingredients, and drops it
+into the normal form with an **imported / review** banner; validation runs as
+usual; **Discard import** undoes the whole thing.
+
+**No API key, no account setup, nothing leaves the page** — the editor only
+builds the prompt and parses what you paste back. (If a one-click version that
+calls an API directly is ever added, its key would live only in that browser's
+`localStorage` for this origin — never in a file, never in the repo. Use a
+dedicated key with a spend cap and keep it out of git.)
+
 ## Collection file format
 
 Anything the app loads — public or private — is one JSON object:

@@ -136,6 +136,21 @@
   .valpanel .issue.w { color: var(--ink-soft); }
   .valpanel .issue.w .tag { color: var(--ink-soft); font-weight: 600; }
 
+  .modal { position: fixed; inset: 0; z-index: 50; background: rgba(23,20,15,.55); display: flex; align-items: flex-start; justify-content: center; padding: 40px 16px; overflow-y: auto; }
+  .modal .box { background: var(--paper); border: 1.5px solid var(--ink); border-radius: var(--radius); width: 100%; max-width: 760px; padding: 22px 24px 26px; }
+  .modal h2 { font-size: 1.4rem; }
+  .modal .close { float: right; font-size: 1.5rem; line-height: 1; background: transparent; border: 0; color: var(--ink-soft); padding: 0; }
+  .modal .step { margin: 16px 0 5px; font-size: .7rem; font-weight: 700; text-transform: uppercase; letter-spacing: .12em; color: var(--ink-soft); }
+  .modal textarea, .modal input[type=text] { width: 100%; font-size: 13px; }
+  .modal textarea { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+  .modal .promptbox { min-height: 220px; white-space: pre; overflow: auto; }
+  .modal .err { color: var(--accent); font-size: .82rem; margin-top: 6px; white-space: pre-wrap; }
+
+  .importbanner { background: var(--paper-2); border: 1.5px solid var(--accent); border-radius: var(--radius); padding: 12px 14px; margin-bottom: 16px; font-size: .88rem; }
+  .importbanner .conf { font-weight: 700; text-transform: uppercase; font-size: .68rem; letter-spacing: .09em; color: var(--accent); }
+  .importbanner ul { margin: 6px 0 0; padding-left: 18px; }
+  .importbanner .acts { margin-top: 10px; display: flex; gap: 10px; flex-wrap: wrap; }
+
   .loadscreen { padding: 60px 24px; max-width: 640px; margin: 0 auto; text-align: center; }
   .loadscreen h2 { font-size: 1.6rem; margin-bottom: 8px; }
   .loadscreen p { color: var(--ink-soft); }
@@ -189,6 +204,7 @@
       <div class="listtop">
         <input class="search" id="searchRecipes" placeholder="Search recipes…" autocomplete="off">
         <button class="btn" id="newRecipe">+ New</button>
+        <button class="btn" id="importRecipe" title="Import a recipe with an AI assistant">Import…</button>
       </div>
       <div id="listRecipesBody"></div>
     </div>
@@ -232,6 +248,31 @@
   <div class="vpbody" id="valPanelBody"></div>
 </div>
 
+<div class="modal" id="importModal" hidden>
+  <div class="box">
+    <button class="close" id="importClose" aria-label="Close">×</button>
+    <h2>Import a recipe</h2>
+    <p class="hint">Build the prompt below, run it in <a href="https://claude.ai" target="_blank" rel="noopener">claude.ai</a> (or any assistant), and paste its JSON reply back. Nothing is sent anywhere from this page.</p>
+
+    <div class="step">1 · Source</div>
+    <input type="text" id="importUrl" placeholder="https://…  — a recipe page URL">
+    <div class="hint" style="text-align:center;margin:6px 0">— or paste the recipe text —</div>
+    <textarea id="importText" style="min-height:80px" placeholder="Name, ingredients, method, garnish, source…"></textarea>
+
+    <div class="step">2 · Prompt
+      <button class="btn ghost" id="importBuild" type="button">build</button>
+      <button class="btn ghost" id="importCopy" type="button" hidden>copy</button>
+    </div>
+    <textarea id="importPrompt" class="promptbox" readonly hidden></textarea>
+
+    <div class="step">3 · Paste the assistant's JSON reply</div>
+    <textarea id="importReply" style="min-height:120px" placeholder='{ "recipe": { … }, "newIngredients": [ … ], "confidence": "…" }'></textarea>
+    <div class="err" id="importErr" hidden></div>
+
+    <div style="margin-top:16px"><button class="btn primary" id="importGo" type="button">Import &amp; review</button></div>
+  </div>
+</div>
+
 <datalist id="dlIngredients"></datalist>
 <datalist id="dlTags"></datalist>
 
@@ -265,7 +306,8 @@
     tab: "recipes",
     selRecipe: null, selIng: null,
     snapshot: "", mlPerOz: 30,
-    issues: { errors: [], warnings: [] }
+    issues: { errors: [], warnings: [] },
+    imported: null               // { id, ings:[], notes:[], confidence, source } while an import awaits review
   };
   var $ = function (id) { return document.getElementById(id); };
   var el = function (tag, cls, html) { var e = document.createElement(tag); if (cls) e.className = cls; if (html != null) e.innerHTML = html; return e; };
@@ -626,6 +668,8 @@
       jsonMode.on = false;
       formWrap.innerHTML = "";
       var chg = function () { c.id = c.id || slug(c.name); S.selRecipe = c.id; renderRecipeList(); rebuildDatalists(); validateAndPaint(); };
+
+      if (S.imported && S.imported.id === c.id) formWrap.appendChild(importBanner(c));
 
       formWrap.appendChild(field("Name", textEl(c.name, function (v) { c.name = v; if (!c._idLocked) c.id = slug(v); syncId(); chg(); })));
       var idInput = textEl(c.id, function (v) { c.id = slug(v); c._idLocked = true; chg(); });
@@ -1079,6 +1123,164 @@
     clearTimeout(toastH); toastH = setTimeout(function () { t.remove(); }, 4200);
   }
 
+  // ---------------------------------------------------------------- import ----
+  function openImport() {
+    ["importUrl", "importText", "importPrompt", "importReply", "importErr"].forEach(function (id) { $(id).value = ""; });
+    $("importPrompt").hidden = true; $("importCopy").hidden = true; $("importErr").hidden = true;
+    $("importModal").hidden = false;
+    $("importUrl").focus();
+  }
+  function closeImport() { $("importModal").hidden = true; }
+
+  function vocabList() {
+    var byCat = {}, out = [];
+    S.I.ingredients.forEach(function (g) { (byCat[g.category] = byCat[g.category] || []).push(g); });
+    CATEGORIES.forEach(function (cat) {
+      (byCat[cat] || []).sort(function (a, b) { return a.name.localeCompare(b.name); }).forEach(function (g) {
+        out.push(g.id + "  —  " + g.name + (g.aliases && g.aliases.length ? "  (" + g.aliases.join(", ") + ")" : ""));
+      });
+    });
+    return out.join("\n");
+  }
+  function buildImportPrompt() {
+    var url = $("importUrl").value.trim(), text = $("importText").value.trim();
+    if (!url && !text) { $("importErr").hidden = false; $("importErr").textContent = "Give a URL or paste some recipe text first."; return; }
+    $("importErr").hidden = true;
+    S._importSrc = url;
+    var tags = {}; S.C.cocktails.forEach(function (c) { (c.tags || []).forEach(function (t) { tags[t] = 1; }); });
+    var p =
+"You are extracting ONE cocktail recipe into strict JSON for the Postdiluvian collection.\n" +
+"Return ONLY a single JSON object — no prose, no markdown fences — of this shape:\n\n" +
+"{\n" +
+'  "recipe": {\n' +
+'    "name": "string",\n' +
+'    "aka": ["alternate names"],\n' +
+'    "base": ["ingredient-id"],            // defining spirit(s), ids from the VOCABULARY below\n' +
+'    "method": "' + METHODS.join("|") + '",\n' +
+'    "glass": "' + GLASSES.join("|") + '",\n' +
+'    "service": "' + SERVICES.join("|") + '",\n' +
+'    "ice": "' + ICES.join("|") + '",\n' +
+'    "garnish": "string, or \\"None\\"",\n' +
+'    "tags": ["subset of: ' + Object.keys(tags).sort().join(", ") + '"],\n' +
+'    "notes": "string, may be empty",\n' +
+'    "source": { "book": "", "author": "", "url": "", "page": null, "note": "" },\n' +
+'    "ingredients": [\n' +
+'      { "ref": "ingredient-id", "ml": 60 },                    // volumes in ml, converted at 30 ml per US fl oz\n' +
+'      { "ref": "ingredient-id", "ml": 5, "unit": "tsp" },      // tsp / barspoon: ml = count * 5, plus unit\n' +
+'      { "ref": "ingredient-id", "amount": 2, "unit": "dash" }, // dash / drops / piece: amount + unit\n' +
+'      { "ref": "ingredient-id", "unit": "rinse" }              // rinse / top / leaves / sprig: unit only\n' +
+'    ],\n' +
+'    "steps": ["short imperative step"]\n' +
+'  },\n' +
+'  "newIngredients": [\n' +
+'    // ONLY ingredients not already in the VOCABULARY. Use the same id in "ref" above.\n' +
+'    { "id": "kebab-id", "name": "Name", "category": "' + CATEGORIES.join("|") + '", "family": null, "aliases": [], "brands": [] }\n' +
+'    // family = ' + FAMILIES.join("|") + ' ONLY when category is "spirit", otherwise null\n' +
+'  ],\n' +
+'  "notes": ["assumptions or anything uncertain"],\n' +
+'  "confidence": "high|medium|low"\n' +
+"}\n\n" +
+"Rules:\n" +
+"- Convert every volume to millilitres at 30 ml per US fl oz (1 oz→30, ¾→22.5, ½→15, ¼→7.5, ⅓→10).\n" +
+"- Map each ingredient to an id from the VOCABULARY, matching generously (\"fresh lime juice\" → lime-juice).\n" +
+"  If one genuinely isn't there, coin a kebab-case id, use it in \"ref\", and add it to newIngredients.\n" +
+"- base = the defining spirit(s), usually the largest spirit pour(s).\n" +
+"- Missing detail → sensible default (method stir, glass coupe, service up, ice none, garnish \"None\").\n\n" +
+"VOCABULARY (id — name — aliases):\n" + vocabList() + "\n\n" +
+"RECIPE SOURCE:\n" + (url ? url : "(text below)\n\n" + text);
+    $("importPrompt").value = p;
+    $("importPrompt").hidden = false;
+    $("importCopy").hidden = false;
+  }
+  function copyImportPrompt() {
+    var ta = $("importPrompt");
+    if (navigator.clipboard) navigator.clipboard.writeText(ta.value).then(function () { toast("Prompt copied."); }, selectFallback);
+    else selectFallback();
+    function selectFallback() { ta.hidden = false; ta.focus(); ta.select(); toast("Select all and copy (⌘/Ctrl-C)."); }
+  }
+  function looseJson(s) {
+    s = (s || "").trim();
+    var tries = [s];
+    var m = s.match(/```(?:json)?\s*([\s\S]*?)```/); if (m) tries.push(m[1].trim());
+    var a = s.indexOf("{"), b = s.lastIndexOf("}"); if (a >= 0 && b > a) tries.push(s.slice(a, b + 1));
+    for (var i = 0; i < tries.length; i++) { try { return JSON.parse(tries[i]); } catch (e) {} }
+    return null;
+  }
+  function doImport() {
+    var env = looseJson($("importReply").value);
+    if (!env) { impErr("Couldn't parse that as JSON. Paste the assistant's reply exactly."); return; }
+    var rec = env.recipe || (env.name ? env : null);
+    if (!rec || !rec.name) { impErr("No recipe.name in the reply."); return; }
+
+    var added = [];
+    (env.newIngredients || []).forEach(function (ni) {
+      if (!ni || !ni.id) return;
+      var id = slug(ni.id);
+      if (S.I.ingredients.some(function (x) { return x.id === id; })) return;
+      S.I.ingredients.push({
+        id: id, name: ni.name || id,
+        category: CATEGORIES.indexOf(ni.category) >= 0 ? ni.category : "other",
+        family: ni.category === "spirit" ? (FAMILIES.indexOf(ni.family) >= 0 ? ni.family : "other") : null,
+        aliases: ni.aliases || [], brands: ni.brands || []
+      });
+      added.push(id);
+    });
+
+    var id = slug(rec.id || rec.name) || "recipe", base = id, k = 2;
+    while (S.C.cocktails.some(function (c) { return c.id === id; })) id = base + "-" + (k++);
+    var c = {
+      id: id, name: rec.name, aka: rec.aka || [], variantOf: null, status: "active",
+      base: rec.base || [], method: rec.method || "stir", glass: rec.glass || "coupe",
+      service: rec.service || "up", ice: rec.ice || "none", garnish: rec.garnish || "None",
+      tags: rec.tags || [], notes: rec.notes || "", source: rec.source || {},
+      ingredients: (rec.ingredients || []).map(function (i) { var e = {}; for (var key in i) e[key] = i[key]; return e; }),
+      steps: rec.steps || []
+    };
+    S.C.cocktails.push(c);
+    S.imported = { id: id, ings: added, notes: env.notes || [], confidence: env.confidence || "", source: (c.source && c.source.url) || S._importSrc || "" };
+
+    closeImport();
+    rebuildDatalists(); renderIngredientList();
+    selectTab("recipes"); renderRecipeList(); selectRecipe(id);
+    validateAndPaint();
+    toast("Imported “" + c.name + "” — review, then Save.");
+  }
+  function impErr(m) { $("importErr").hidden = false; $("importErr").textContent = m; }
+
+  function importBanner(c) {
+    var b = el("div", "importbanner");
+    var imp = S.imported;
+    b.innerHTML =
+      '<span class="conf">imported &middot; confidence ' + esc(imp.confidence || "?") + '</span>' +
+      (imp.source ? ' &middot; <a href="' + esc(imp.source) + '" target="_blank" rel="noopener">source ↗</a>' : '') +
+      (imp.notes && imp.notes.length ? '<ul>' + imp.notes.map(function (x) { return '<li>' + esc(x) + '</li>'; }).join("") + '</ul>' : '') +
+      (imp.ings.length ? '<div style="margin-top:6px">New ingredients added: ' +
+        imp.ings.map(function (x) { return '<a href="#" data-ing="' + esc(x) + '">' + esc(x) + '</a>'; }).join(", ") +
+        ' &mdash; check each one’s category / family.</div>' : '') +
+      '<div class="acts">' +
+        '<button class="btn" type="button" data-keep>Looks good — keep it</button>' +
+        '<button class="btn ghost danger" type="button" data-discard>Discard import</button>' +
+      '</div>';
+    b.querySelectorAll("[data-ing]").forEach(function (a) {
+      a.addEventListener("click", function (e) { e.preventDefault(); selectTab("ingredients"); selectIngredient(a.dataset.ing); });
+    });
+    b.querySelector("[data-keep]").addEventListener("click", function () { S.imported = null; renderRecipeForm(c); });
+    b.querySelector("[data-discard]").addEventListener("click", discardImport);
+    return b;
+  }
+  function discardImport() {
+    if (!S.imported) return;
+    var imp = S.imported; S.imported = null;
+    S.C.cocktails = S.C.cocktails.filter(function (c) { return c.id !== imp.id; });
+    imp.ings.forEach(function (id) {
+      if (refCount(id) === 0) S.I.ingredients = S.I.ingredients.filter(function (g) { return g.id !== id; });
+    });
+    S.selRecipe = null;
+    rebuildDatalists(); renderRecipeList(); renderIngredientList();
+    $("paneRecipe").innerHTML = '<div class="placeholder">Import discarded.</div>';
+    validateAndPaint();
+  }
+
   // ---------------------------------------------------------------- wire ------
   $("loadBtn").addEventListener("click", function () { $("fileInput").click(); });
   $("loadBtn2").addEventListener("click", function () { $("fileInput").click(); });
@@ -1094,6 +1296,12 @@
   $("searchIngredients").addEventListener("input", renderIngredientList);
   $("newRecipe").addEventListener("click", newRecipe);
   $("newIngredient").addEventListener("click", newIngredient);
+  $("importRecipe").addEventListener("click", openImport);
+  $("importClose").addEventListener("click", closeImport);
+  $("importModal").addEventListener("click", function (e) { if (e.target === this) closeImport(); });
+  $("importBuild").addEventListener("click", buildImportPrompt);
+  $("importCopy").addEventListener("click", copyImportPrompt);
+  $("importGo").addEventListener("click", doImport);
   function toggleValPanel(force) {
     var p = $("valPanel");
     var open = force == null ? !p.classList.contains("open") : force;
