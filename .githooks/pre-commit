@@ -1,0 +1,17 @@
+#!/bin/sh
+# Regenerate the shareable collection files and stamp their versions, then
+# re-stage the public one. No-ops on a clone with no private masters
+# (../postdiluvian-private, or $POSTDILUVIAN_PRIVATE).
+#
+# Enable once per clone:  git config core.hooksPath .githooks
+set -e
+
+python3 tools/publish.py
+python3 tools/validate.py data/collection.json
+
+priv="${POSTDILUVIAN_PRIVATE:-../postdiluvian-private}"
+if [ -f "$priv/collection.full.json" ]; then
+  python3 tools/validate.py "$priv/collection.full.json"
+fi
+
+git add data/collection.json

@@ -1,0 +1,34 @@
+#!/bin/sh
+# Commit the public site and back up the private collection in one step.
+#
+#   bin/save "added the Jungle Bird"
+#
+# Runs from anywhere inside the public repo. Commits here (the pre-commit hook
+# regenerates data/collection.json and the private collection.full.json), then
+# commits + pushes the private repo. Pushes the public repo too if it has a remote.
+set -e
+
+msg="${1:-update}"
+pub="$(git rev-parse --show-toplevel)"
+priv="${POSTDILUVIAN_PRIVATE:-$pub/../postdiluvian-private}"
+
+git -C "$pub" add -A
+if ! git -C "$pub" diff --cached --quiet; then
+  git -C "$pub" commit -m "$msg"
+else
+  echo "public: nothing to commit"
+fi
+
+if [ -d "$priv/.git" ]; then
+  git -C "$priv" add -A
+  if ! git -C "$priv" diff --cached --quiet; then
+    git -C "$priv" commit -m "$msg"
+  else
+    echo "private: nothing to commit"
+  fi
+  git -C "$priv" remote | grep -q . && git -C "$priv" push
+else
+  echo "private repo not found at $priv — skipping backup"
+fi
+
+git -C "$pub" remote | grep -q . && git -C "$pub" push || true

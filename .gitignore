@@ -1,0 +1,6 @@
+.DS_Store
+__pycache__/
+*.pyc
+
+# not created by the build — see note to Noah; excluded until identified
+design-explorations.html

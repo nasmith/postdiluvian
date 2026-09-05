@@ -1,0 +1,512 @@
+{
+  "meta": {
+    "kind": "postdiluvian-collection",
+    "name": "Postdiluvian — basics",
+    "version": "2026.09.05",
+    "contentHash": "4c126330bbfe",
+    "note": "A public sample of six classics. The full collection is shared privately."
+  },
+  "ingredients": [
+    {
+      "id": "gin",
+      "name": "Gin",
+      "category": "spirit",
+      "family": "gin",
+      "aliases": [
+        "london dry gin",
+        "plymouth gin",
+        "dry gin"
+      ],
+      "brands": [
+        "Plymouth",
+        "Tanqueray",
+        "Rutte",
+        "Beefeater",
+        "Sipsmith"
+      ]
+    },
+    {
+      "id": "rye",
+      "name": "Rye",
+      "category": "spirit",
+      "family": "whiskey",
+      "aliases": [
+        "rye whiskey",
+        "straight rye"
+      ],
+      "brands": [
+        "Rittenhouse",
+        "Michter's",
+        "Bulleit",
+        "Old Overholt"
+      ]
+    },
+    {
+      "id": "bourbon",
+      "name": "Bourbon",
+      "category": "spirit",
+      "family": "whiskey",
+      "aliases": [
+        "bourbon whiskey"
+      ],
+      "brands": [
+        "Elijah Craig",
+        "Four Roses",
+        "Buffalo Trace",
+        "Wild Turkey"
+      ]
+    },
+    {
+      "id": "cognac",
+      "name": "Cognac",
+      "category": "spirit",
+      "family": "brandy",
+      "aliases": [
+        "brandy (cognac)"
+      ],
+      "brands": [
+        "Pierre Ferrand",
+        "H by Hine",
+        "Park"
+      ]
+    },
+    {
+      "id": "white-rum",
+      "name": "White rum",
+      "category": "spirit",
+      "family": "rum",
+      "aliases": [
+        "light rum",
+        "silver rum"
+      ],
+      "brands": [
+        "Caña Brava",
+        "Plantation 3 Stars",
+        "Probitas"
+      ]
+    },
+    {
+      "id": "rhum-agricole",
+      "name": "Rhum agricole",
+      "category": "spirit",
+      "family": "rum",
+      "aliases": [
+        "agricole",
+        "cane rum"
+      ],
+      "brands": [
+        "La Favorite",
+        "Rhum J.M",
+        "Neisson"
+      ]
+    },
+    {
+      "id": "sweet-vermouth",
+      "name": "Sweet vermouth",
+      "category": "vermouth",
+      "family": null,
+      "aliases": [
+        "italian vermouth",
+        "rosso vermouth",
+        "red vermouth"
+      ],
+      "brands": [
+        "Carpano Antica",
+        "Cocchi",
+        "Dolin Rouge",
+        "Punt e Mes"
+      ]
+    },
+    {
+      "id": "dry-vermouth",
+      "name": "Dry vermouth",
+      "category": "vermouth",
+      "family": null,
+      "aliases": [
+        "french vermouth",
+        "white vermouth"
+      ],
+      "brands": [
+        "Dolin Dry",
+        "Noilly Prat",
+        "Doña Paula"
+      ]
+    },
+    {
+      "id": "campari",
+      "name": "Campari",
+      "category": "amaro",
+      "family": null,
+      "aliases": [
+        "red bitter aperitivo"
+      ],
+      "brands": [
+        "Campari"
+      ]
+    },
+    {
+      "id": "orange-curacao",
+      "name": "Orange curaçao",
+      "category": "liqueur",
+      "family": null,
+      "aliases": [
+        "curacao",
+        "dry curacao",
+        "orange curacao"
+      ],
+      "brands": [
+        "Pierre Ferrand Dry Curaçao",
+        "Grand Marnier"
+      ]
+    },
+    {
+      "id": "angostura-bitters",
+      "name": "Angostura bitters",
+      "category": "bitters",
+      "family": null,
+      "aliases": [
+        "angostura",
+        "aromatic bitters"
+      ],
+      "brands": [
+        "Angostura"
+      ],
+      "pantry": true
+    },
+    {
+      "id": "orange-bitters",
+      "name": "Orange bitters",
+      "category": "bitters",
+      "family": null,
+      "aliases": [],
+      "brands": [
+        "Regans'",
+        "Angostura",
+        "Fee Brothers"
+      ],
+      "pantry": true
+    },
+    {
+      "id": "lime-juice",
+      "name": "Lime juice",
+      "category": "juice",
+      "family": null,
+      "aliases": [
+        "lime",
+        "fresh lime juice"
+      ],
+      "brands": []
+    },
+    {
+      "id": "lemon-juice",
+      "name": "Lemon juice",
+      "category": "juice",
+      "family": null,
+      "aliases": [
+        "lemon",
+        "fresh lemon juice"
+      ],
+      "brands": []
+    },
+    {
+      "id": "simple-syrup",
+      "name": "Simple syrup",
+      "category": "syrup",
+      "family": null,
+      "aliases": [
+        "simple",
+        "1:1 simple syrup",
+        "sugar syrup"
+      ],
+      "brands": [],
+      "notes": "1:1 sugar:water."
+    }
+  ],
+  "cocktails": [
+    {
+      "id": "daiquiri",
+      "name": "Daiquiri",
+      "aka": [],
+      "variantOf": null,
+      "status": "active",
+      "base": [
+        "white-rum"
+      ],
+      "method": "shake",
+      "glass": "coupe",
+      "service": "up",
+      "ice": "none",
+      "garnish": "lime wedge",
+      "tags": [
+        "citrus",
+        "shaken",
+        "sour"
+      ],
+      "notes": "",
+      "source": {
+        "book": "Cocktail Codex",
+        "author": "Alex Day, Nick Fauchald, David Kaplan, Devon Tarby"
+      },
+      "ingredients": [
+        {
+          "ref": "white-rum",
+          "ml": 52.5,
+          "brand": "Caña Brava"
+        },
+        {
+          "ref": "rhum-agricole",
+          "ml": 7.5,
+          "brand": "La Favorite Cœur de Canne"
+        },
+        {
+          "ref": "lime-juice",
+          "ml": 30
+        },
+        {
+          "ref": "simple-syrup",
+          "ml": 22.5
+        }
+      ],
+      "steps": [
+        "Shake with ice.",
+        "Strain into a chilled coupe.",
+        "Garnish with lime wedge."
+      ]
+    },
+    {
+      "id": "manhattan",
+      "name": "Manhattan",
+      "aka": [],
+      "variantOf": null,
+      "status": "active",
+      "base": [
+        "rye"
+      ],
+      "method": "stir",
+      "glass": "coupe",
+      "service": "up",
+      "ice": "none",
+      "garnish": "brandied cherry",
+      "tags": [
+        "spirit-forward",
+        "stirred"
+      ],
+      "notes": "",
+      "source": {
+        "book": "Cocktail Codex",
+        "author": "Alex Day, Nick Fauchald, David Kaplan, Devon Tarby"
+      },
+      "ingredients": [
+        {
+          "ref": "rye",
+          "ml": 60,
+          "brand": "Rittenhouse"
+        },
+        {
+          "ref": "sweet-vermouth",
+          "ml": 30,
+          "brand": "Cocchi"
+        },
+        {
+          "ref": "angostura-bitters",
+          "amount": 2,
+          "unit": "dash"
+        }
+      ],
+      "steps": [
+        "Stir with ice until well chilled.",
+        "Strain into a chilled coupe.",
+        "Garnish with brandied cherry."
+      ]
+    },
+    {
+      "id": "martini",
+      "name": "Martini",
+      "aka": [],
+      "variantOf": null,
+      "status": "active",
+      "base": [
+        "gin"
+      ],
+      "method": "stir",
+      "glass": "coupe",
+      "service": "up",
+      "ice": "none",
+      "garnish": "lemon twist",
+      "tags": [
+        "spirit-forward",
+        "stirred"
+      ],
+      "notes": "",
+      "source": {
+        "book": "Cocktail Codex",
+        "author": "Alex Day, Nick Fauchald, David Kaplan, Devon Tarby"
+      },
+      "ingredients": [
+        {
+          "ref": "gin",
+          "ml": 60,
+          "brand": "Plymouth"
+        },
+        {
+          "ref": "dry-vermouth",
+          "ml": 30,
+          "brand": "Dolin"
+        },
+        {
+          "ref": "orange-bitters",
+          "amount": 1,
+          "unit": "dash"
+        }
+      ],
+      "steps": [
+        "Stir with ice until well chilled.",
+        "Strain into a chilled coupe.",
+        "Garnish with lemon twist."
+      ]
+    },
+    {
+      "id": "negroni",
+      "name": "Negroni",
+      "aka": [],
+      "variantOf": null,
+      "status": "active",
+      "base": [
+        "gin"
+      ],
+      "method": "stir",
+      "glass": "old-fashioned",
+      "service": "rocks",
+      "ice": "large-cube",
+      "garnish": "orange twist or wheel",
+      "tags": [
+        "aperitivo",
+        "bitter",
+        "spirit-forward",
+        "stirred"
+      ],
+      "notes": "",
+      "source": {
+        "book": "Cocktail Codex",
+        "author": "Alex Day, Nick Fauchald, David Kaplan, Devon Tarby"
+      },
+      "ingredients": [
+        {
+          "ref": "gin",
+          "ml": 30,
+          "brand": "Tanqueray"
+        },
+        {
+          "ref": "sweet-vermouth",
+          "ml": 30,
+          "brand": "Carpano Antica"
+        },
+        {
+          "ref": "campari",
+          "ml": 30
+        }
+      ],
+      "steps": [
+        "Stir with ice until well chilled.",
+        "Strain into a rocks glass over one large cube.",
+        "Garnish with orange twist or wheel."
+      ]
+    },
+    {
+      "id": "sidecar",
+      "name": "Sidecar",
+      "aka": [],
+      "variantOf": null,
+      "status": "active",
+      "base": [
+        "cognac"
+      ],
+      "method": "shake",
+      "glass": "coupe",
+      "service": "up",
+      "ice": "none",
+      "garnish": "Orange twist",
+      "tags": [
+        "citrus",
+        "shaken",
+        "sour"
+      ],
+      "notes": "",
+      "source": {
+        "book": "Cocktail Codex",
+        "author": "Alex Day, Nick Fauchald, David Kaplan, Devon Tarby"
+      },
+      "ingredients": [
+        {
+          "ref": "cognac",
+          "ml": 45,
+          "brand": "Pierre Ferrand Ambre"
+        },
+        {
+          "ref": "orange-curacao",
+          "ml": 30,
+          "brand": "Pierre Ferrand Dry Curaçao"
+        },
+        {
+          "ref": "lemon-juice",
+          "ml": 22.5
+        },
+        {
+          "ref": "simple-syrup",
+          "ml": 5,
+          "unit": "tsp"
+        }
+      ],
+      "steps": [
+        "Shake with ice.",
+        "Strain into a chilled coupe.",
+        "Garnish with orange twist."
+      ]
+    },
+    {
+      "id": "whiskey-sour",
+      "name": "Whiskey Sour",
+      "aka": [],
+      "variantOf": null,
+      "status": "active",
+      "base": [
+        "bourbon"
+      ],
+      "method": "shake",
+      "glass": "old-fashioned",
+      "service": "rocks",
+      "ice": "large-cube",
+      "garnish": "Lemon wedge",
+      "tags": [
+        "citrus",
+        "shaken",
+        "sour"
+      ],
+      "notes": "",
+      "source": {
+        "book": "Cocktail Codex",
+        "author": "Alex Day, Nick Fauchald, David Kaplan, Devon Tarby"
+      },
+      "ingredients": [
+        {
+          "ref": "bourbon",
+          "ml": 60,
+          "brand": "Elijah Craig Small Batch"
+        },
+        {
+          "ref": "lemon-juice",
+          "ml": 22.5
+        },
+        {
+          "ref": "simple-syrup",
+          "ml": 22.5
+        }
+      ],
+      "steps": [
+        "Shake with ice.",
+        "Strain into a rocks glass over one large cube.",
+        "Garnish with lemon wedge."
+      ]
+    }
+  ]
+}
