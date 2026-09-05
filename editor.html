@@ -96,6 +96,10 @@
   @media (max-width: 700px) { .ingrow { grid-template-columns: 1fr; } }
 
   .sectionh { font-family: var(--serif); font-size: 1.05rem; margin: 22px 0 8px; padding-top: 14px; border-top: 1.5px solid var(--ink); }
+  .uses { display: flex; flex-wrap: wrap; gap: 7px 14px; }
+  .uses a { font-size: .9rem; }
+  .usetag { font-size: .6rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-soft); border: 1px solid var(--line-strong); border-radius: 999px; padding: 0 5px; }
+  .resolved a, .chips .chip a { text-decoration: underline; }
   .subactions { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 6px; }
 
   .preview { margin-top: 10px; border: 1.5px solid var(--ink); border-radius: var(--radius); padding: 16px 18px; background: var(--card); }
@@ -535,13 +539,19 @@
     i.addEventListener("input", function () { onInput(i.value); });
     return i;
   }
-  function chipEditor(arr, onChange, listId, noInput) {
+  function chipEditor(arr, onChange, listId, noInput, onChipClick) {
     var box = el("div", "chips");
     function paint() {
       box.innerHTML = "";
       arr.forEach(function (v, idx) {
         var c = el("span", "chip");
-        c.innerHTML = '<span>' + esc(v) + '</span>';
+        if (onChipClick) {
+          var a = el("a"); a.href = "#"; a.textContent = v; a.style.color = "inherit";
+          a.addEventListener("click", function (e) { e.preventDefault(); onChipClick(v); });
+          c.appendChild(a);
+        } else {
+          c.innerHTML = '<span>' + esc(v) + '</span>';
+        }
         var b = el("button", null, "×"); b.type = "button";
         b.addEventListener("click", function () { arr.splice(idx, 1); paint(); onChange(); });
         c.appendChild(b); box.appendChild(c);
@@ -627,7 +637,8 @@
       // base
       var baseChoices = S.I.ingredients.filter(function (g) { return BASE_CATS.indexOf(g.category) >= 0; }).map(function (g) { return g.id; });
       var baseBox = el("div");
-      var baseChips = chipEditor(c.base, function () { chg(); renderPreview(); }, null, true);
+      var baseChips = chipEditor(c.base, function () { chg(); renderPreview(); }, null, true,
+        function (id) { selectTab("ingredients"); selectIngredient(id); });
       var baseAdd = selectEl(baseChoices.filter(function (b) { return c.base.indexOf(b) < 0; }), "", function (v) {
         if (v && c.base.indexOf(v) < 0) { c.base.push(v); renderRecipeForm(c); }
       }, true);
@@ -699,11 +710,18 @@
       var g0 = S.I.ingredients.filter(function (x) { return x.id === ig.ref; })[0];
       nm.value = g0 ? g0.name : ig.ref;
       var resolved = el("div", "resolved");
+      function showLink(id) {
+        resolved.className = "resolved";
+        resolved.innerHTML = '&rarr; <a href="#" data-goto>' + esc(id) + '</a>';
+        resolved.querySelector("[data-goto]").addEventListener("click", function (e) {
+          e.preventDefault(); selectTab("ingredients"); selectIngredient(id);
+        });
+      }
       function resolve() {
         var v = nm.value.trim(), match = S.I.ingredients.filter(function (x) {
           return x.name.toLowerCase() === v.toLowerCase() || x.id === v || (x.aliases || []).some(function (a) { return a.toLowerCase() === v.toLowerCase(); });
         })[0];
-        if (match) { ig.ref = match.id; resolved.className = "resolved"; resolved.textContent = "→ " + match.id; }
+        if (match) { ig.ref = match.id; showLink(match.id); }
         else {
           ig.ref = slug(v);
           resolved.className = "resolved new";
@@ -714,7 +732,7 @@
         chg();
       }
       nm.addEventListener("input", resolve);
-      if (g0) resolved.textContent = "→ " + g0.id;
+      if (g0) showLink(g0.id);
       else if (ig.ref) { resolved.className = "resolved new"; resolved.textContent = "“" + ig.ref + "” not in vocabulary"; }
       nameBox.appendChild(nm); nameBox.appendChild(resolved);
       row.appendChild(nameBox);
@@ -836,14 +854,16 @@
     S.I.ingredients.push(g); S.selIng = null;
     renderIngredientList(); renderIngredientForm(g); validateAndPaint();
   }
-  function refCount(id) {
-    var n = 0;
+  function usedIn(id) {
+    var out = [];
     S.C.cocktails.forEach(function (c) {
-      if ((c.base || []).indexOf(id) >= 0) n++;
-      (c.ingredients || []).forEach(function (i) { if (i.ref === id) n++; });
+      var asBase = (c.base || []).indexOf(id) >= 0;
+      var asIng = (c.ingredients || []).some(function (i) { return i.ref === id; });
+      if (asBase || asIng) out.push({ id: c.id, name: c.name || c.id, base: asBase, ing: asIng });
     });
-    return n;
+    return out.sort(function (a, b) { return a.name.localeCompare(b.name); });
   }
+  function refCount(id) { return usedIn(id).length; }
   function renameRef(oldId, newId) {
     S.C.cocktails.forEach(function (c) {
       c.base = (c.base || []).map(function (b) { return b === oldId ? newId : b; });
@@ -906,6 +926,21 @@
       pl.querySelector("input").addEventListener("change", function (e) { if (e.target.checked) g.pantry = true; else delete g.pantry; chg(); });
       form.appendChild(field("Pantry", pl));
       form.appendChild(field("Notes", textEl(g.notes, function (v) { if (v) g.notes = v; else delete g.notes; chg(); })));
+
+      var uses = g.id ? usedIn(g.id) : [];
+      form.appendChild(el("div", "sectionh", "Used in " + uses.length + " recipe" + (uses.length === 1 ? "" : "s")));
+      if (!uses.length) form.appendChild(el("div", "hint", "Not referenced by any recipe."));
+      else {
+        var ul = el("div", "uses");
+        uses.forEach(function (u) {
+          var a = el("a"); a.href = "#";
+          a.innerHTML = esc(u.name) + (u.base ? ' <span class="usetag">base</span>' : "");
+          a.addEventListener("click", function (e) { e.preventDefault(); selectTab("recipes"); selectRecipe(u.id); });
+          ul.appendChild(a);
+        });
+        form.appendChild(ul);
+      }
+
       applyFieldErrors(p, "ing:" + g.id);
     }
     build();
