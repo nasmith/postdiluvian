@@ -52,7 +52,16 @@
   }
 
   * { box-sizing: border-box; }
-  html { -webkit-text-size-adjust: 100%; }
+  html {
+    -webkit-text-size-adjust: 100%;
+    overflow-y: scroll;                 /* always reserve the scrollbar */
+    scrollbar-width: thin;
+    scrollbar-color: var(--ink-soft) transparent;
+  }
+  ::-webkit-scrollbar { width: 13px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--ink-soft); border: 3px solid var(--paper); border-radius: 999px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--ink); }
   body {
     margin: 0; background: var(--paper); color: var(--ink);
     font-family: var(--sans); line-height: 1.5;
@@ -69,7 +78,7 @@
   .wrap { max-width: var(--maxw); margin: 0 auto; padding: 0 22px; }
 
   header.top {
-    border-bottom: 1.5px solid var(--ink);
+    border-bottom: 1px solid var(--line);
     background: var(--paper);
     position: sticky; top: 0; z-index: 30;
     backdrop-filter: blur(6px);
@@ -102,32 +111,45 @@
   .chip.accent[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
   #favToggle[aria-pressed="true"] { background: var(--blue); border-color: var(--blue); color: #fff; }
 
-  .filters { padding: 16px 0 6px; border-bottom: 1.5px solid var(--ink); }
+  .filters { padding: 16px 0 6px; border-bottom: 1px solid var(--line); }
   .filt-row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 9px; }
   .filt-row .label { font-size: .68rem; font-weight: 700; color: var(--ink); text-transform: uppercase; letter-spacing: .13em; margin-right: 6px; min-width: 52px; }
   .more-btn { background: transparent; border: 0; color: var(--blue); font-size: .8rem; text-decoration: underline; padding: 4px; }
   .clearall { background: transparent; border: 0; color: var(--ink-soft); font-size: .78rem; text-decoration: underline; }
 
-  main { padding: 26px 0 90px; }
-  .grid { display: flex; flex-direction: column; max-width: var(--list-w); }
+  main { padding: 22px 0 96px; }
+  .listhead { display: flex; align-items: baseline; gap: 12px; margin: 2px 0 16px; }
+  .listhead .count { font-family: var(--serif); font-weight: 600; font-size: 1.15rem; letter-spacing: -.01em; color: var(--ink); text-transform: none; }
+  .listhead .sub { font-family: var(--sans); font-weight: 700; font-size: .64rem; letter-spacing: .14em; text-transform: uppercase; color: var(--ink-soft); }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(248px, 1fr)); gap: 14px; align-items: start; }
+  @media (max-width: 540px) { .grid { grid-template-columns: 1fr; } }
+
+  .grouphead { grid-column: 1 / -1; font-family: var(--sans); font-weight: 700; text-transform: uppercase; letter-spacing: .13em; font-size: .68rem; color: var(--ink-soft); margin: 10px 0 -2px; }
+  .grouphead:first-child { margin-top: 0; }
+  .grouphead.favs { color: var(--blue); }
+
+  .scrollfade {
+    position: fixed; left: 0; right: 0; bottom: 0; height: 72px; z-index: 20;
+    pointer-events: none; opacity: 1; transition: opacity .2s ease;
+    background: linear-gradient(to bottom, transparent, var(--paper) 88%);
+  }
 
   .card {
-    background: transparent; border: 0; border-bottom: 1px solid var(--line); border-radius: 0;
-    padding: 15px 14px; margin: 0 -14px; box-shadow: none; position: relative;
-    display: flex; flex-direction: column; gap: 3px; cursor: pointer;
-    transition: background .1s ease;
+    background: var(--card); border: 1.5px solid var(--ink); border-radius: var(--radius);
+    padding: 14px 15px 13px; box-shadow: none; position: relative; min-height: 128px;
+    display: flex; flex-direction: column; gap: 4px; cursor: pointer;
+    transition: transform .1s ease, box-shadow .1s ease;
   }
-  .card:first-child { border-top: 2px solid var(--ink); }
-  .card:hover { background: var(--paper-2); }
+  .card:hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0 var(--ink); }
   .card:hover h3 { color: var(--accent); }
-  .card:focus-visible { outline: 2px solid var(--blue); outline-offset: -2px; }
-  .card h3 { font-size: clamp(1.3rem, 1.15rem + .6vw, 1.55rem); padding-right: 26px; }
-  .card .base { font-family: var(--sans); font-size: .66rem; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; color: var(--accent); }
-  .card .pour { color: var(--ink-soft); font-size: .92rem; }
-  .card .tags { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 5px; }
+  .card:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+  .card h3 { font-size: 1.3rem; line-height: 1.1; padding-right: 22px; }
+  .card .base { font-family: var(--sans); font-size: .64rem; font-weight: 700; letter-spacing: .13em; text-transform: uppercase; color: var(--accent); }
+  .card .pour { color: var(--ink-soft); font-size: .87rem; line-height: 1.4; }
+  .card .tags { display: flex; gap: 10px; flex-wrap: wrap; margin-top: auto; padding-top: 9px; }
   .tag { font-size: .64rem; font-weight: 700; letter-spacing: .09em; text-transform: uppercase; color: var(--ink-soft); border: 0; border-radius: 0; padding: 0; }
   .fav {
-    position: absolute; top: 13px; right: 8px; border: 0; background: transparent;
+    position: absolute; top: 10px; right: 8px; border: 0; background: transparent;
     font-size: 1.1rem; line-height: 1; color: var(--line); padding: 4px;
   }
   .fav[aria-pressed="true"] { color: var(--blue); }
@@ -140,7 +162,7 @@
   :root[data-theme="dark"] .bar-badge.ok, :root:not([data-theme="light"]) .bar-badge.ok { color: #86c072; }
 
   .empty { color: var(--ink-soft); padding: 50px 4px; font-style: italic; }
-  .wishlist-head { font-family: var(--sans); font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .13em; font-size: .7rem; border-top: 1px solid var(--line); padding-top: 18px; margin-top: 10px; }
+  .wishlist-head { grid-column: 1 / -1; font-family: var(--sans); font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: .13em; font-size: .7rem; border-top: 1px solid var(--line); padding-top: 16px; margin-top: 10px; }
 
   /* detail overlay */
   .overlay { position: fixed; inset: 0; background: rgba(23,20,15,.5); z-index: 50; display: none; }
@@ -197,7 +219,6 @@
   @media (max-width: 520px) {
     .sheet { padding: 22px 18px 50px; }
     .brand .count { width: 100%; margin: 0; }
-    .card { margin: 0; padding: 15px 0; }
   }
 </style>
 </head>
@@ -206,8 +227,6 @@
   <div class="wrap">
     <div class="brand">
       <h1>Postdiluvian</h1>
-      <span class="sub">a cocktail commonplace book</span>
-      <span class="count" id="count"></span>
     </div>
     <div class="toolbar">
       <label class="search">
@@ -234,10 +253,15 @@
 <div class="wrap filters" id="filters"></div>
 
 <main class="wrap">
+  <div class="listhead">
+    <span class="count" id="count"></span>
+    <span class="sub" id="listsort">A–Z</span>
+  </div>
   <div class="grid" id="grid"></div>
   <div class="empty" id="empty" hidden>Nothing matches those filters.</div>
 </main>
 
+<div class="scrollfade" id="scrollfade" aria-hidden="true"></div>
 <div class="drophint" id="drophint">Drop a collection file to load it</div>
 
 <div class="footer">
@@ -524,13 +548,24 @@
   }
 
   function render() {
-    var active = COCKTAILS.filter(function (c) { return c.status !== "wishlist" && passes(c); });
+    var actives = COCKTAILS.filter(function (c) { return c.status !== "wishlist" && passes(c); });
     var wish = COCKTAILS.filter(function (c) { return c.status === "wishlist" && passes(c); });
-    active = sortList(active);
+    var favs = sortList(actives.filter(function (c) { return state.fav.has(c.id); }));
+    var rest = sortList(actives.filter(function (c) { return !state.fav.has(c.id); }));
     var grid = document.getElementById("grid");
-    grid.innerHTML = active.map(cardHTML).join("") +
-      (wish.length ? '<div class="wishlist-head">On the list — needs a spec</div>' + wish.map(cardHTML).join("") : "");
-    document.getElementById("empty").hidden = active.length + wish.length > 0;
+    var heads = favs.length && rest.length;
+    var html = "";
+    if (favs.length) {
+      if (heads) html += '<div class="grouphead favs">★ Favorites</div>';
+      html += favs.map(cardHTML).join("");
+    }
+    if (rest.length) {
+      if (heads) html += '<div class="grouphead">A–Z</div>';
+      html += rest.map(cardHTML).join("");
+    }
+    if (wish.length) html += '<div class="wishlist-head">On the list — needs a spec</div>' + wish.map(cardHTML).join("");
+    grid.innerHTML = html;
+    document.getElementById("empty").hidden = actives.length + wish.length > 0;
 
     grid.querySelectorAll(".card").forEach(function (el) {
       el.addEventListener("click", function (e) {
@@ -542,11 +577,14 @@
       if (fav) fav.addEventListener("click", function () { toggleFav(el.dataset.id); });
     });
 
-    var showMissing = state.bar.size > 0;
-    document.getElementById("count").textContent =
-      showMissing ? countMakeable() + " of " + activeCount() + " you can make now"
-                  : COCKTAILS.filter(function (c) { return c.status !== "wishlist"; }).length + " recipes";
+    var total = activeCount();
+    var countEl = document.getElementById("count");
+    if (state.bar.size) countEl.textContent = countMakeable() + " of " + total + " you can make";
+    else if (actives.length < total) countEl.textContent = actives.length + " of " + total + " recipes";
+    else countEl.textContent = total + " recipe" + (total === 1 ? "" : "s");
+    document.getElementById("listsort").textContent = favs.length ? "Favorites first" : "A–Z";
     document.getElementById("fcount").textContent = state.fav.size + " favorite" + (state.fav.size === 1 ? "" : "s");
+    updateFade();
   }
   function activeCount() { return COCKTAILS.filter(function (c) { return c.status !== "wishlist"; }).length; }
   function countMakeable() { return COCKTAILS.filter(function (c) { return c.status !== "wishlist" && !missingRefs(c).length; }).length; }
@@ -730,6 +768,15 @@
   // ---------- misc ----------
   function uniq(a) { return a.filter(function (v, i) { return a.indexOf(v) === i; }).sort(); }
   function esc(s) { return String(s == null ? "" : s).replace(/[&<>"]/g, function (m) { return ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" })[m]; }); }
+
+  var fadeEl = document.getElementById("scrollfade");
+  function updateFade() {
+    if (!fadeEl) return;
+    var atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 8;
+    fadeEl.style.opacity = atBottom ? "0" : "1";
+  }
+  window.addEventListener("scroll", updateFade, { passive: true });
+  window.addEventListener("resize", updateFade);
 
   document.getElementById("q").addEventListener("input", function () { state.q = this.value.trim(); render(); });
   document.getElementById("u-oz").addEventListener("click", function () { setUnits("oz"); });
