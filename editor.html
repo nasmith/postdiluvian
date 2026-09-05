@@ -256,7 +256,8 @@
 
     <div class="step">1 · Source</div>
     <input type="text" id="importUrl" placeholder="https://…  — a recipe page URL">
-    <div class="hint" style="text-align:center;margin:6px 0">— or paste the recipe text —</div>
+    <div class="hint" style="margin:4px 0 0">Your assistant needs web browsing / search turned on to open a URL. If it can't, it will say so — then paste the page text below instead.</div>
+    <div class="hint" style="text-align:center;margin:8px 0">— or paste the recipe text —</div>
     <textarea id="importText" style="min-height:80px" placeholder="Name, ingredients, method, garnish, source…"></textarea>
 
     <div class="step">2 · Prompt
@@ -1149,9 +1150,18 @@
     $("importErr").hidden = true;
     S._importSrc = url;
     var tags = {}; S.C.cocktails.forEach(function (c) { (c.tags || []).forEach(function (t) { tags[t] = 1; }); });
-    var p =
-"You are extracting ONE cocktail recipe into strict JSON for the Postdiluvian collection.\n" +
-"Return ONLY a single JSON object — no prose, no markdown fences — of this shape:\n\n" +
+    var fetchBlock = url ?
+"STEP 1 — GET THE PAGE. Use your web browsing / fetch tool to open this URL and read the actual page:\n" +
+"  " + url + "\n\n" +
+"Do NOT skip this. Do NOT answer from memory or from other sources — only the content you actually retrieve from that page.\n" +
+"If you cannot get the real recipe from that page (no browsing tool, the fetch fails, or it lands on a paywall / login / index / error page), STOP and return exactly:\n" +
+'  { "error": "could not fetch the page", "detail": "<one line on what happened — tell the user to paste the page text into the importer instead>" }\n' +
+"Never guess or reconstruct a recipe you could not read.\n\n" +
+"STEP 2 — EXTRACT. From the retrieved page, produce ONE JSON object:\n\n"
+      :
+"Extract ONE cocktail recipe from the text at the end of this prompt. Produce ONE JSON object:\n\n";
+    var p = fetchBlock +
+"Return ONLY the JSON — no prose, no markdown fences. On success use this shape; on a fetch failure use the error object above.\n\n" +
 "{\n" +
 '  "recipe": {\n' +
 '    "name": "string",\n' +
@@ -1178,7 +1188,7 @@
 '    { "id": "kebab-id", "name": "Name", "category": "' + CATEGORIES.join("|") + '", "family": null, "aliases": [], "brands": [] }\n' +
 '    // family = ' + FAMILIES.join("|") + ' ONLY when category is "spirit", otherwise null\n' +
 '  ],\n' +
-'  "notes": ["assumptions or anything uncertain"],\n' +
+'  "notes": ["assumptions, anything uncertain, plus one short quote from the page you read"],\n' +
 '  "confidence": "high|medium|low"\n' +
 "}\n\n" +
 "Rules:\n" +
@@ -1186,9 +1196,10 @@
 "- Map each ingredient to an id from the VOCABULARY, matching generously (\"fresh lime juice\" → lime-juice).\n" +
 "  If one genuinely isn't there, coin a kebab-case id, use it in \"ref\", and add it to newIngredients.\n" +
 "- base = the defining spirit(s), usually the largest spirit pour(s).\n" +
-"- Missing detail → sensible default (method stir, glass coupe, service up, ice none, garnish \"None\").\n\n" +
-"VOCABULARY (id — name — aliases):\n" + vocabList() + "\n\n" +
-"RECIPE SOURCE:\n" + (url ? url : "(text below)\n\n" + text);
+"- Missing detail → sensible default (method stir, glass coupe, service up, ice none, garnish \"None\").\n" +
+"- In notes, quote one line of the source verbatim so the reviewer can confirm you read the real page.\n\n" +
+"VOCABULARY (id — name — aliases):\n" + vocabList() +
+(url ? "" : "\n\nRECIPE TEXT:\n" + text);
     $("importPrompt").value = p;
     $("importPrompt").hidden = false;
     $("importCopy").hidden = false;
@@ -1210,6 +1221,11 @@
   function doImport() {
     var env = looseJson($("importReply").value);
     if (!env) { impErr("Couldn't parse that as JSON. Paste the assistant's reply exactly."); return; }
+    if (env.error) {
+      impErr("The assistant couldn't use the URL: " + (env.detail || env.error) +
+        "\n\nOpen the page yourself, copy the recipe, and paste it into the text box above instead.");
+      return;
+    }
     var rec = env.recipe || (env.name ? env : null);
     if (!rec || !rec.name) { impErr("No recipe.name in the reply."); return; }
 
