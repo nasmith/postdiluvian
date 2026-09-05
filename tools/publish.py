@@ -117,9 +117,34 @@ def main():
                      {"note": "A public sample. The full collection is shared privately."})
     write(pub)
 
-    print("publish: full v%s (%d recipes)%s   public v%s (%d recipes)%s" % (
+    # ---- starter master files: the same 8, split into the format the editor loads ----
+    starter_ck = ROOT / "data" / "starter" / "cocktails.json"
+    starter_ig = ROOT / "data" / "starter" / "ingredients.json"
+    starter_ck.parent.mkdir(parents=True, exist_ok=True)
+    starter_ck.write_text(json.dumps({
+        "meta": {
+            "name": "My cocktails",
+            "publicName": "My cocktails — sample",
+            "mlPerOz": 30,
+            "note": "Starter master file: the 8 classics from Postdiluvian's public sample. "
+                    "Edit freely — this is yours. Pair it with ingredients.json in this folder.",
+        },
+        "cocktails": sorted(picked, key=lambda c: c["name"].lower()),
+    }, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    starter_ig.write_text(json.dumps({
+        "meta": {
+            "note": "Starter vocabulary — only the ingredients the sample cocktails use. Add your own.",
+            "categories": ["spirit", "vermouth", "fortified", "wine", "liqueur", "amaro",
+                           "bitters", "juice", "syrup", "other"],
+            "families": ["gin", "whiskey", "rum", "agave", "brandy", "vodka", "aquavit", "other"],
+            "mlPerOz": 30,
+        },
+        "ingredients": [i for i in ingredients if i["id"] in used],
+    }, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+
+    print("publish: full v%s (%d recipes)%s   public v%s (%d recipes)%s   + starter (%d)" % (
         fv, len(cocktails), "  [changed]" if fchg else "",
-        pv, len(picked), "  [changed]" if pchg else ""))
+        pv, len(picked), "  [changed]" if pchg else "", len(picked)))
     return 0
 
 

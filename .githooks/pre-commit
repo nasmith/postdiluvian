@@ -14,4 +14,4 @@ if [ -f "$priv/collection.full.json" ]; then
   python3 tools/validate.py "$priv/collection.full.json"
 fi
 
-git add data/collection.json
+git add data/collection.json data/starter/

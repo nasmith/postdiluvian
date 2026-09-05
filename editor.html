@@ -198,6 +198,10 @@
       <span class="f" id="fsI">ingredients.json — not loaded</span>
     </div>
   </div>
+  <p style="margin-top:18px">Starting from scratch?
+    <button class="btn" id="loadStarter">Load the 8-classic sample</button>
+    — a small <code>cocktails.json</code> / <code>ingredients.json</code> pair to curate from.
+    Save it wherever you like and point <code>publish.py</code> at that folder.</p>
 </div>
 
 <div id="app" hidden>
@@ -336,6 +340,15 @@
         refreshLoadState();
       }).finally(function () { done++; });
     });
+  }
+  function loadStarter() {
+    Promise.all([
+      fetch("data/starter/cocktails.json", { cache: "no-cache" }).then(function (r) { return r.json(); }),
+      fetch("data/starter/ingredients.json", { cache: "no-cache" }).then(function (r) { return r.json(); })
+    ]).then(function (res) {
+      S.C = res[0]; S.I = res[1]; refreshLoadState();
+      toast("Loaded the sample — edit, then Save both to keep your copy.");
+    }).catch(function () { toast("Couldn’t load the sample files."); });
   }
   function refreshLoadState() {
     $("fsC").textContent = S.C ? "cocktails.json — " + S.C.cocktails.length + " recipes" : "cocktails.json — not loaded";
@@ -1304,6 +1317,7 @@
   // ---------------------------------------------------------------- wire ------
   $("loadBtn").addEventListener("click", function () { $("fileInput").click(); });
   $("loadBtn2").addEventListener("click", function () { $("fileInput").click(); });
+  $("loadStarter").addEventListener("click", loadStarter);
   $("fileInput").addEventListener("change", function () { ingestFiles(this.files); this.value = ""; });
   var dz = $("dropzone");
   ["dragover", "dragenter"].forEach(function (ev) { window.addEventListener(ev, function (e) { e.preventDefault(); dz.classList.add("hot"); }); });

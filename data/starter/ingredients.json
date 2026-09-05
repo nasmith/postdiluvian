@@ -1,0 +1,291 @@
+{
+  "meta": {
+    "note": "Starter vocabulary — only the ingredients the sample cocktails use. Add your own.",
+    "categories": [
+      "spirit",
+      "vermouth",
+      "fortified",
+      "wine",
+      "liqueur",
+      "amaro",
+      "bitters",
+      "juice",
+      "syrup",
+      "other"
+    ],
+    "families": [
+      "gin",
+      "whiskey",
+      "rum",
+      "agave",
+      "brandy",
+      "vodka",
+      "aquavit",
+      "other"
+    ],
+    "mlPerOz": 30
+  },
+  "ingredients": [
+    {
+      "id": "gin",
+      "name": "Gin",
+      "category": "spirit",
+      "family": "gin",
+      "aliases": [
+        "london dry gin",
+        "plymouth gin",
+        "dry gin"
+      ],
+      "brands": [
+        "Plymouth",
+        "Tanqueray",
+        "Rutte",
+        "Beefeater",
+        "Sipsmith"
+      ]
+    },
+    {
+      "id": "rye",
+      "name": "Rye",
+      "category": "spirit",
+      "family": "whiskey",
+      "aliases": [
+        "rye whiskey",
+        "straight rye"
+      ],
+      "brands": [
+        "Rittenhouse",
+        "Michter's",
+        "Bulleit",
+        "Old Overholt"
+      ]
+    },
+    {
+      "id": "bourbon",
+      "name": "Bourbon",
+      "category": "spirit",
+      "family": "whiskey",
+      "aliases": [
+        "bourbon whiskey"
+      ],
+      "brands": [
+        "Elijah Craig",
+        "Four Roses",
+        "Buffalo Trace",
+        "Wild Turkey"
+      ]
+    },
+    {
+      "id": "cognac",
+      "name": "Cognac",
+      "category": "spirit",
+      "family": "brandy",
+      "aliases": [
+        "brandy (cognac)"
+      ],
+      "brands": [
+        "Pierre Ferrand",
+        "H by Hine",
+        "Park"
+      ]
+    },
+    {
+      "id": "white-rum",
+      "name": "White rum",
+      "category": "spirit",
+      "family": "rum",
+      "aliases": [
+        "light rum",
+        "silver rum"
+      ],
+      "brands": [
+        "Caña Brava",
+        "Plantation 3 Stars",
+        "Probitas"
+      ]
+    },
+    {
+      "id": "rhum-agricole",
+      "name": "Rhum agricole",
+      "category": "spirit",
+      "family": "rum",
+      "aliases": [
+        "agricole",
+        "cane rum"
+      ],
+      "brands": [
+        "La Favorite",
+        "Rhum J.M",
+        "Neisson"
+      ]
+    },
+    {
+      "id": "sweet-vermouth",
+      "name": "Sweet vermouth",
+      "category": "vermouth",
+      "family": null,
+      "aliases": [
+        "italian vermouth",
+        "rosso vermouth",
+        "red vermouth"
+      ],
+      "brands": [
+        "Carpano Antica",
+        "Cocchi",
+        "Dolin Rouge",
+        "Punt e Mes"
+      ]
+    },
+    {
+      "id": "dry-vermouth",
+      "name": "Dry vermouth",
+      "category": "vermouth",
+      "family": null,
+      "aliases": [
+        "french vermouth",
+        "white vermouth"
+      ],
+      "brands": [
+        "Dolin Dry",
+        "Noilly Prat",
+        "Doña Paula"
+      ]
+    },
+    {
+      "id": "campari",
+      "name": "Campari",
+      "category": "amaro",
+      "family": null,
+      "aliases": [
+        "red bitter aperitivo"
+      ],
+      "brands": [
+        "Campari"
+      ]
+    },
+    {
+      "id": "aperol",
+      "name": "Aperol",
+      "category": "amaro",
+      "family": null,
+      "aliases": [],
+      "brands": [
+        "Aperol"
+      ],
+      "notes": "Select Aperitivo is a common substitute."
+    },
+    {
+      "id": "orange-curacao",
+      "name": "Orange curaçao",
+      "category": "liqueur",
+      "family": null,
+      "aliases": [
+        "curacao",
+        "dry curacao",
+        "orange curacao"
+      ],
+      "brands": [
+        "Pierre Ferrand Dry Curaçao",
+        "Grand Marnier"
+      ]
+    },
+    {
+      "id": "nonino",
+      "name": "Amaro Nonino Quintessentia",
+      "category": "amaro",
+      "family": null,
+      "aliases": [
+        "nonino",
+        "nonino quintessentia amaro",
+        "nonino quintessentia"
+      ],
+      "brands": [
+        "Nonino"
+      ]
+    },
+    {
+      "id": "angostura-bitters",
+      "name": "Angostura bitters",
+      "category": "bitters",
+      "family": null,
+      "aliases": [
+        "angostura",
+        "aromatic bitters"
+      ],
+      "brands": [
+        "Angostura"
+      ],
+      "pantry": true
+    },
+    {
+      "id": "orange-bitters",
+      "name": "Orange bitters",
+      "category": "bitters",
+      "family": null,
+      "aliases": [],
+      "brands": [
+        "Regans'",
+        "Angostura",
+        "Fee Brothers"
+      ],
+      "pantry": true
+    },
+    {
+      "id": "lime-juice",
+      "name": "Lime juice",
+      "category": "juice",
+      "family": null,
+      "aliases": [
+        "lime",
+        "fresh lime juice"
+      ],
+      "brands": []
+    },
+    {
+      "id": "lemon-juice",
+      "name": "Lemon juice",
+      "category": "juice",
+      "family": null,
+      "aliases": [
+        "lemon",
+        "fresh lemon juice"
+      ],
+      "brands": []
+    },
+    {
+      "id": "grapefruit-juice",
+      "name": "Grapefruit juice",
+      "category": "juice",
+      "family": null,
+      "aliases": [
+        "grapefruit",
+        "pink grapefruit juice"
+      ],
+      "brands": []
+    },
+    {
+      "id": "simple-syrup",
+      "name": "Simple syrup",
+      "category": "syrup",
+      "family": null,
+      "aliases": [
+        "simple",
+        "1:1 simple syrup",
+        "sugar syrup"
+      ],
+      "brands": [],
+      "notes": "1:1 sugar:water."
+    },
+    {
+      "id": "honey-syrup",
+      "name": "Honey syrup",
+      "category": "syrup",
+      "family": null,
+      "aliases": [
+        "honey"
+      ],
+      "brands": [],
+      "notes": "3:1 honey:water."
+    }
+  ]
+}
