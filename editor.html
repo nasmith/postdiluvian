@@ -10,6 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
+<script src="ui.js" defer></script>
 <style>
   * { box-sizing: border-box; }
   [hidden] { display: none !important; }
@@ -203,7 +204,7 @@
   <div class="wrap" id="wrapRecipes">
     <div class="list" id="listRecipes">
       <div class="listtop">
-        <input class="search" id="searchRecipes" placeholder="Search recipes…" autocomplete="off">
+        <input class="search" id="searchRecipes" data-clear placeholder="Search recipes…" autocomplete="off">
         <button class="btn" id="newRecipe">+ New</button>
       </div>
       <div id="listRecipesBody"></div>
@@ -214,7 +215,7 @@
   <div class="wrap" id="wrapIngredients" hidden>
     <div class="list" id="listIngredients">
       <div class="listtop">
-        <input class="search" id="searchIngredients" placeholder="Search ingredients…" autocomplete="off">
+        <input class="search" id="searchIngredients" data-clear placeholder="Search ingredients…" autocomplete="off">
         <button class="btn" id="newIngredient">+ New</button>
       </div>
       <div id="listIngredientsBody"></div>
@@ -255,7 +256,7 @@
     <p class="hint">Build the prompt below, run it in <a href="https://claude.ai" target="_blank" rel="noopener">claude.ai</a> (or any assistant), and paste its JSON reply back. Nothing is sent anywhere from this page.</p>
 
     <div class="step">1 · Source</div>
-    <input type="text" id="importUrl" placeholder="https://…  — a recipe page URL">
+    <input type="text" id="importUrl" data-clear placeholder="https://…  — a recipe page URL">
     <div class="hint" style="margin:4px 0 0">Your assistant needs web browsing / search turned on to open a URL. If it can't, it will say so — then paste the page text below instead.</div>
     <div class="hint" style="text-align:center;margin:8px 0">— or paste the recipe text —</div>
     <textarea id="importText" style="min-height:80px" placeholder="Name, ingredients, method, garnish, source…"></textarea>
@@ -570,6 +571,8 @@
     var f = el("div", "field");
     var l = el("label", null, esc(label)); f.appendChild(l);
     f.appendChild(inputEl);
+    if (window.PDClearable && inputEl.tagName === "INPUT" &&
+        ["text", "url", ""].indexOf(inputEl.getAttribute("type") || "") >= 0) window.PDClearable(inputEl);
     if (hint) { var h = el("div", "hint", hint); f.appendChild(h); }
     return f;
   }
