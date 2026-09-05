@@ -29,7 +29,8 @@
   .bar .spacer { flex: 1; }
   .dot { width: 9px; height: 9px; border-radius: 50%; background: var(--line-strong); flex: none; }
   .dot.dirty { background: var(--accent); }
-  .valbadge { font-size: .8rem; font-weight: 700; padding: 3px 9px; border-radius: 999px; border: 1.5px solid var(--line-strong); white-space: nowrap; }
+  .valbadge { font-size: .8rem; font-weight: 700; padding: 3px 9px; border-radius: 999px; border: 1.5px solid var(--line-strong); white-space: nowrap; cursor: pointer; background: var(--card); }
+  .valbadge:hover { background: var(--paper-2); }
   .valbadge.ok { color: #3f7a3a; border-color: currentColor; }
   .valbadge.err { color: var(--accent); border-color: currentColor; }
   :root[data-theme="dark"] .valbadge.ok, :root:not([data-theme="light"]) .valbadge.ok { color: #86c072; }
@@ -112,15 +113,17 @@
   .jsonwrap .err { color: var(--accent); font-size: .82rem; margin: 4px 0; white-space: pre-wrap; }
   .jsonmini textarea { min-height: 340px; }
 
-  .valpanel { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--card); border-top: 1.5px solid var(--ink); max-height: 42vh; display: flex; flex-direction: column; transform: translateY(calc(100% - 34px)); transition: transform .18s ease; }
+  .valpanel { position: fixed; left: 0; right: 0; bottom: 0; z-index: 30; background: var(--card); border-top: 1.5px solid var(--ink); max-height: 42vh; display: flex; flex-direction: column; transform: translateY(calc(100% - 38px)); transition: transform .18s ease; }
   .valpanel.open { transform: translateY(0); }
-  .valpanel .vph { display: flex; align-items: center; gap: 10px; padding: 7px 16px; cursor: pointer; font-size: .82rem; font-weight: 700; }
+  .valpanel .vph { display: flex; align-items: center; gap: 10px; padding: 9px 16px; cursor: pointer; font-size: .82rem; font-weight: 700; background: var(--paper-2); }
+  .valpanel .vph:hover { background: var(--line); }
   .valpanel .vpbody { overflow-y: auto; padding: 4px 16px 16px; }
   .valpanel .issue { font-size: .82rem; padding: 4px 0; border-top: 1px solid var(--line); cursor: pointer; display: flex; gap: 8px; }
   .valpanel .issue:hover { color: var(--accent); }
   .valpanel .issue .tag { font-weight: 700; flex: none; }
   .valpanel .issue.e .tag { color: var(--accent); }
-  .valpanel .issue.w .tag { color: var(--gold); }
+  .valpanel .issue.w { color: var(--ink-soft); }
+  .valpanel .issue.w .tag { color: var(--ink-soft); font-weight: 600; }
 
   .loadscreen { padding: 60px 24px; max-width: 640px; margin: 0 auto; text-align: center; }
   .loadscreen h2 { font-size: 1.6rem; margin-bottom: 8px; }
@@ -139,7 +142,7 @@
 <div class="bar">
   <h1>Postdiluvian <span class="em">editor</span></h1>
   <span class="dot" id="dirtyDot" title="unsaved changes"></span>
-  <span class="valbadge ok" id="valBadge">—</span>
+  <button class="valbadge ok" id="valBadge" type="button" title="Show issues">—</button>
   <span class="spacer"></span>
   <input type="file" id="fileInput" accept=".json,application/json" multiple hidden>
   <button class="btn" id="loadBtn">Load files…</button>
@@ -1049,10 +1052,14 @@
   $("searchIngredients").addEventListener("input", renderIngredientList);
   $("newRecipe").addEventListener("click", newRecipe);
   $("newIngredient").addEventListener("click", newIngredient);
-  $("valPanelHead").addEventListener("click", function () {
-    var p = $("valPanel"); p.classList.toggle("open");
-    $("valPanelChevron").textContent = p.classList.contains("open") ? "▼" : "▲";
-  });
+  function toggleValPanel(force) {
+    var p = $("valPanel");
+    var open = force == null ? !p.classList.contains("open") : force;
+    p.classList.toggle("open", open);
+    $("valPanelChevron").textContent = open ? "▼" : "▲";
+  }
+  $("valPanelHead").addEventListener("click", function () { toggleValPanel(); });
+  $("valBadge").addEventListener("click", function () { toggleValPanel(true); });
   wireJsonTab();
 })();
 </script>
