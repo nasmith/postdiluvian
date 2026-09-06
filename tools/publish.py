@@ -33,8 +33,8 @@ FULL_OUT = PRIVATE / "collection.full.json"
 PUBLIC_OUT = ROOT / "data" / "collection.json"
 
 KIND = "postdiluvian-collection"
-BASICS = ["martini", "negroni", "manhattan", "whiskey-sour", "daiquiri", "sidecar",
-          "paper-plane", "brown-derby"]
+BASICS = ["martini", "negroni", "manhattan", "whiskey-sour", "old-fashioned", "daiquiri",
+          "sidecar", "paper-plane", "brown-derby"]
 
 
 def content_hash(coll):
@@ -126,7 +126,7 @@ def main():
             "name": "My cocktails",
             "publicName": "My cocktails — sample",
             "mlPerOz": 30,
-            "note": "Starter master file: the 8 classics from Postdiluvian's public sample. "
+            "note": "Starter master file: the 9 classics from Postdiluvian's public sample. "
                     "Edit freely — this is yours. Pair it with ingredients.json in this folder.",
         },
         "cocktails": sorted(picked, key=lambda c: c["name"].lower()),

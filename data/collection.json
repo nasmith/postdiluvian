@@ -2,8 +2,8 @@
   "meta": {
     "kind": "postdiluvian-collection",
     "name": "Postdiluvian — basics",
-    "version": "2026.09.05.3",
-    "contentHash": "a7d6ae0fa7f6",
+    "version": "2026.09.05.4",
+    "contentHash": "a3dc44f3d056",
     "note": "A public sample. The full collection is shared privately."
   },
   "ingredients": [
@@ -255,7 +255,7 @@
         "sugar syrup"
       ],
       "brands": [],
-      "notes": "1:1 sugar:water."
+      "notes": "1:1 sugar:water by weight. Warm water, shake occasionally, rest a day; a dash of vodka keeps it a week or two refrigerated."
     },
     {
       "id": "honey-syrup",
@@ -471,10 +471,10 @@
         "gin"
       ],
       "method": "stir",
-      "glass": "old-fashioned",
-      "service": "rocks",
-      "ice": "large-cube",
-      "garnish": "orange twist or wheel",
+      "glass": "coupe",
+      "service": "up",
+      "ice": "none",
+      "garnish": "orange twist",
       "tags": [
         "aperitivo",
         "bitter",
@@ -504,8 +504,54 @@
       ],
       "steps": [
         "Stir with ice until well chilled.",
-        "Strain into a rocks glass over one large cube.",
-        "Garnish with orange twist or wheel."
+        "Strain into a chilled coupe.",
+        "Garnish with an orange twist."
+      ]
+    },
+    {
+      "id": "old-fashioned",
+      "name": "Old Fashioned",
+      "aka": [],
+      "variantOf": null,
+      "status": "active",
+      "base": [
+        "rye"
+      ],
+      "method": "stir",
+      "glass": "old-fashioned",
+      "service": "rocks",
+      "ice": "large-cube",
+      "garnish": "lemon or orange twist",
+      "tags": [
+        "bitter",
+        "spirit-forward",
+        "stirred"
+      ],
+      "notes": "A dry Old Fashioned — only ¼ oz simple syrup, a touch less sweet than the usual sugar cube or ½ oz bar syrup. Rye is standard; almost any aged spirit works. The sugar cube is traditional but dissolves unevenly, so syrup is cleaner.",
+      "source": {
+        "url": "https://noahsmith.substack.com/p/cocktails-an-introduction",
+        "note": "Noah Smith, “Cocktails: An Introduction”"
+      },
+      "ingredients": [
+        {
+          "ref": "rye",
+          "ml": 60,
+          "brand": "Rittenhouse"
+        },
+        {
+          "ref": "simple-syrup",
+          "ml": 7.5
+        },
+        {
+          "ref": "angostura-bitters",
+          "amount": 2,
+          "unit": "dash"
+        }
+      ],
+      "steps": [
+        "Stir whiskey, syrup, and bitters with ice until well chilled.",
+        "Strain over one large cube in a rocks glass.",
+        "Express a lemon or orange twist over the top and drop it in."
       ]
     },
     {
@@ -615,9 +661,9 @@
         "bourbon"
       ],
       "method": "shake",
-      "glass": "old-fashioned",
-      "service": "rocks",
-      "ice": "large-cube",
+      "glass": "coupe",
+      "service": "up",
+      "ice": "none",
       "garnish": "Lemon wedge",
       "tags": [
         "citrus",
@@ -645,8 +691,8 @@
         }
       ],
       "steps": [
-        "Shake with ice.",
-        "Strain into a rocks glass over one large cube.",
+        "Shake with ice for about ten seconds.",
+        "Strain into a chilled coupe.",
         "Garnish with lemon wedge."
       ]
     }
