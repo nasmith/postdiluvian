@@ -183,7 +183,7 @@
   <button class="btn" id="importRecipe" hidden>✦ Import recipe…</button>
   <button class="btn" id="loadBtn">Load files…</button>
   <button class="btn primary" id="saveBtn" disabled>Save both</button>
-  <a class="btn ghost" href="index.html">← browser</a>
+  <a class="btn ghost" href="index.html">← Postdiluvian</a>
 </div>
 
 <div class="tabs" id="tabs" hidden>
@@ -195,7 +195,7 @@
 <div id="loadScreen" class="loadscreen">
   <h2>Load your two master files</h2>
   <p>Pick <code>cocktails.json</code> and <code>ingredients.json</code> from your
-     <code>postdiluvian-private</code> folder (select both, or load one at a time).
+     collection folder (select both, or load one at a time).
      Everything runs in your browser — nothing is uploaded. Saving downloads the
      edited files for you to move back into the folder.</p>
   <div class="dropzone" id="dropzone">
@@ -1130,7 +1130,7 @@
     setTimeout(function () { download("ingredients.json", textI()); }, 350);
     S.snapshot = snapshotStr();
     validateAndPaint();
-    toast("Downloaded. Move both into postdiluvian-private, then run  bin/save");
+    toast("Downloaded. Move both back into your collection folder, then run  bin/save");
   }
 
   // ---------------------------------------------------------------- misc ------
